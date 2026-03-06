@@ -1,7 +1,14 @@
 from __future__ import annotations
 
-from psycopg.rows import dict_row
-from psycopg.types.json import Json
+try:  # pragma: no cover - exercised in integration/runtime environments
+    from psycopg.rows import dict_row
+    from psycopg.types.json import Json
+except Exception:  # pragma: no cover - allows unit tests without psycopg installed
+    dict_row = None
+
+    class Json:  # type: ignore[no-redef]
+        def __init__(self, obj):
+            self.obj = obj
 
 from ..api.schemas.detection import DetectionResult, DetectionRunOut
 from ..core.postgres import ensure_postgres_schema, get_postgres_connection

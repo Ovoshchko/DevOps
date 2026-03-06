@@ -74,7 +74,6 @@ def ensure_postgres_schema() -> None:
                     );
                     """
                 )
-                # Backward compatibility with older migration naming.
                 cur.execute(
                     "ALTER TABLE detection_runs ADD COLUMN IF NOT EXISTS detector_config_id TEXT;"
                 )

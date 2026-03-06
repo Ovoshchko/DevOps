@@ -17,7 +17,7 @@ jobs:
       - name: Install dependencies
         run: pip install './backend[dev]'
       - name: Run tests
-        run: PYTHONPATH=. python -m pytest -q backend/tests
+        run: PYTHONPATH=. python -m pytest backend/tests
 
   build-backend:
     runs-on: ubuntu-latest

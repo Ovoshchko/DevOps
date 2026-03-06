@@ -27,7 +27,8 @@ class DetectionService:
         detector = self.detector_repo.get(req.detector_config_id)
         if detector is None:
             raise LookupError(f'Detector {req.detector_config_id} not found')
-        if str(detector.status) == 'archived':
+        detector_status = getattr(detector.status, 'value', detector.status)
+        if detector_status == 'archived':
             raise ValueError(f'Detector {req.detector_config_id} is archived and cannot be used')
 
         effective_window_end = req.window_end

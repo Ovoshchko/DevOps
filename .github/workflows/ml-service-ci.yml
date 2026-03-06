@@ -17,7 +17,7 @@ jobs:
       - name: Install dependencies
         run: pip install './ml-service[dev]'
       - name: Run tests
-        run: PYTHONPATH=ml-service python -m pytest -q ml-service/tests
+        run: PYTHONPATH=ml-service python -m pytest ml-service/tests
 
   build-ml-service:
     runs-on: ubuntu-latest

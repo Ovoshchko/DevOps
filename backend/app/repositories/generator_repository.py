@@ -3,7 +3,10 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from psycopg.rows import dict_row
+try:  # pragma: no cover - exercised in integration/runtime environments
+    from psycopg.rows import dict_row
+except Exception:  # pragma: no cover - allows unit tests without psycopg installed
+    dict_row = None
 
 from ..api.schemas.generator import GeneratorJobCreate, GeneratorJobOut
 from ..core.postgres import ensure_postgres_schema, get_postgres_connection
