@@ -18,7 +18,7 @@ def test_detector_profile_lifecycle_contract():
     }
 
     created = client.post('/detectors', json=payload)
-    assert created.status_code == 201
+    assert created.status_code == 201, created.text
     detector_id = created.json()['id']
 
     updated = client.put(f'/detectors/{detector_id}', json={'status': 'draft'})

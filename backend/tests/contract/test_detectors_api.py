@@ -15,7 +15,7 @@ def test_detectors_crud_contract():
         "features": ["bytes_per_sec"],
     }
     created = client.post('/detectors', json=payload)
-    assert created.status_code == 201
+    assert created.status_code == 201, created.text
     detector_id = created.json()['id']
 
     listed = client.get('/detectors')

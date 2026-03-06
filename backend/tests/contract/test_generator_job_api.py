@@ -16,7 +16,7 @@ def test_generator_job_lifecycle_contract():
             'duration_seconds': 5,
         },
     )
-    assert created.status_code == 201
+    assert created.status_code == 201, created.text
     job_id = created.json()['id']
 
     fetched = client.get(f'/generator/jobs/{job_id}')

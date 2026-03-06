@@ -7,14 +7,17 @@ client = TestClient(app)
 
 
 def test_detections_run_and_query_contract():
-    detector = client.post('/detectors', json={
+    created = client.post('/detectors', json={
         "name": "det-x",
         "description": "demo",
         "sensitivity": 0.7,
         "window_size_seconds": 60,
         "window_step_seconds": 30,
         "features": ["bytes_per_sec"]
-    }).json()
+    })
+    assert created.status_code == 201, created.text
+    detector = created.json()
+    assert "id" in detector, created.text
 
     now = datetime.now(timezone.utc)
     run = client.post('/detections/run', json={
