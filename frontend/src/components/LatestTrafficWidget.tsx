@@ -6,6 +6,13 @@ export function LatestTrafficWidget({ points }: { points: any[] }) {
   const maxBytes = Math.max(...bytesSeries, 1)
   const avgBytes =
     recent.length > 0 ? Math.round(bytesSeries.reduce((acc, value) => acc + value, 0) / recent.length) : 0
+  const chartPoints = recent
+    .map((point, index) => {
+      const x = recent.length === 1 ? 0 : Math.round((index / (recent.length - 1)) * 100)
+      const y = 100 - Math.round((Number(point.metrics?.bytes_per_sec ?? 0) / maxBytes) * 100)
+      return `${x},${Math.min(100, Math.max(0, y))}`
+    })
+    .join(' ')
 
   return (
     <section className="panel">
@@ -15,6 +22,12 @@ export function LatestTrafficWidget({ points }: { points: any[] }) {
       </p>
       {recent.length > 0 ? (
         <div className="traffic-rows">
+          <div className="traffic-chart">
+            <p className="small">Traffic trend (bytes/sec)</p>
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Traffic throughput trend">
+              <polyline points={chartPoints} />
+            </svg>
+          </div>
           {recent.map((point) => {
             const bytesPerSec = Number(point.metrics?.bytes_per_sec ?? 0)
             const ratio = Math.max(4, Math.round((bytesPerSec / maxBytes) * 100))

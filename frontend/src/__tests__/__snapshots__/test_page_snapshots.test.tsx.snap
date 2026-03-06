@@ -15,15 +15,38 @@ exports[`detections page snapshot 1`] = `
       <p
         class="small"
       >
-        Start anomaly detection for the last one minute window.
+        Start anomaly detection for a selected detector and last one minute window.
       </p>
+      <label>
+        Detector
+        <select
+          disabled=""
+        >
+          <option
+            value=""
+          >
+            No detectors available
+          </option>
+        </select>
+      </label>
       <button
         class="primary"
+        disabled=""
+        style="margin-top: 12px;"
         type="button"
       >
         Run detection
       </button>
     </div>
+    <section
+      class="panel"
+    >
+      <p
+        class="small"
+      >
+        Active detector: not selected 
+      </p>
+    </section>
     <section
       class="panel"
     >
@@ -37,13 +60,22 @@ exports[`detections page snapshot 1`] = `
               ID
             </th>
             <th>
+              Detector
+            </th>
+            <th>
               Status
             </th>
             <th>
-              Window Start
+              Window
             </th>
             <th>
-              Window End
+              Threshold
+            </th>
+            <th>
+              Features
+            </th>
+            <th>
+              Anomaly
             </th>
           </tr>
         </thead>

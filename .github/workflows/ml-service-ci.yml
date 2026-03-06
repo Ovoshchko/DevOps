@@ -1,0 +1,37 @@
+name: ML Service CI
+
+on:
+  push:
+    paths:
+      - 'ml-service/**'
+      - '.github/workflows/ml-service-ci.yml'
+  pull_request:
+    paths:
+      - 'ml-service/**'
+      - '.github/workflows/ml-service-ci.yml'
+
+jobs:
+  test-ml-service:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install -e 'ml-service[dev]'
+      - name: Run tests
+        run: PYTHONPATH=ml-service python -m pytest -q ml-service/tests
+
+  build-ml-service:
+    runs-on: ubuntu-latest
+    needs: test-ml-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install -e 'ml-service[dev]'
+      - name: Build package
+        run: python -m pip wheel --no-deps --wheel-dir /tmp/wheels ./ml-service
