@@ -1,0 +1,31 @@
+h1 {
+  margin: 0;
+  font-size: 1.3rem;
+  letter-spacing: 0.01em;
+}
+
+h2 {
+  margin: 0 0 var(--space-2);
+  font-size: 1.15rem;
+}
+
+h3 {
+  margin: 0 0 var(--space-1);
+  font-size: 1rem;
+}
+
+p,
+li,
+label,
+input,
+button,
+td,
+th {
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+
+.small {
+  color: var(--muted);
+  font-size: 0.85rem;
+}

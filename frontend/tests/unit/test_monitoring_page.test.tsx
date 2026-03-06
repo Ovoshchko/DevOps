@@ -1,18 +1,25 @@
 import React from 'react'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { MonitoringPage } from '../../src/pages/MonitoringPage'
 
 beforeEach(() => {
-  vi.stubGlobal('fetch', vi.fn(async (url: string) => {
-    if (url.includes('/anomalies/latest')) return { ok: true, status: 200, json: async () => ({ results: [] }) } as any
-    return { ok: true, status: 200, json: async () => ({ points: [] }) } as any
-  }))
+  jest.spyOn(global, 'fetch').mockImplementation(async (input: RequestInfo | URL) => {
+    const url = String(input)
+    if (url.includes('/anomalies/latest')) {
+      return { ok: true, status: 200, json: async () => ({ results: [] }) } as Response
+    }
+    if (url.includes('/traffic/latest')) {
+      return { ok: true, status: 200, json: async () => ({ points: [] }) } as Response
+    }
+    return { ok: true, status: 202, json: async () => ({ accepted: 10 }) } as Response
+  })
 })
 
-describe('MonitoringPage', () => {
-  it('renders monitoring title', () => {
-    render(<MonitoringPage />)
-    expect(screen.getByText('Monitoring')).toBeDefined()
-  })
+afterEach(() => {
+  jest.restoreAllMocks()
+})
+
+test('renders monitoring title', async () => {
+  render(<MonitoringPage />)
+  await waitFor(() => expect(screen.getByText('Monitoring')).toBeInTheDocument())
 })

@@ -1,10 +1,28 @@
 import { apiRequest } from './apiClient'
 
-const BASE = (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:8000'
+export type DetectorPayload = {
+  name: string
+  description?: string
+  sensitivity: number
+  window_size_seconds: number
+  window_step_seconds: number
+  features: string[]
+  status?: 'draft' | 'active' | 'archived'
+}
 
 export const detectorsApi = {
-  list: () => apiRequest<any[]>(`${BASE}/detectors`),
-  create: (payload: any) => apiRequest<any>(`${BASE}/detectors`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }),
-  update: (id: string, payload: any) => apiRequest<any>(`${BASE}/detectors/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }),
-  remove: (id: string) => apiRequest<void>(`${BASE}/detectors/${id}`, { method: 'DELETE' })
+  list: () => apiRequest<any[]>('/detectors'),
+  create: (payload: DetectorPayload) =>
+    apiRequest<any>('/detectors', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }),
+  update: (id: string, payload: Partial<DetectorPayload>) =>
+    apiRequest<any>(`/detectors/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }),
+  remove: (id: string) => apiRequest<void>(`/detectors/${id}`, { method: 'DELETE' }),
 }

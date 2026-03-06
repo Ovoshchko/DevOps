@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from ..repositories.detector_repository import DetectorRepository
 from ..api.schemas.detector import DetectorConfigCreate, DetectorConfigUpdate
+from ..repositories.detector_repository import DetectorRepository
 
 
 class DetectorService:

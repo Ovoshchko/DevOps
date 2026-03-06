@@ -1,9 +1,18 @@
 import { apiRequest } from './apiClient'
-
-const BASE = (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:8000'
+import { TrafficPoint } from '../types/generator'
 
 export const monitoringApi = {
-  ingest: (points: any[]) => apiRequest<{ accepted: number }>(`${BASE}/traffic/ingest`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ points }) }),
-  latestTraffic: () => apiRequest<{ points: any[] }>(`${BASE}/traffic/latest`),
-  latestAnomalies: () => apiRequest<{ results: any[] }>(`${BASE}/anomalies/latest`)
+  ingest: (points: TrafficPoint[]) =>
+    apiRequest<{ accepted: number }>('/traffic/ingest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ points }),
+    }),
+  latestTraffic: () => apiRequest<{ points: any[] }>('/traffic/latest'),
+  latestAnomalies: (detectorProfileId?: string) =>
+    apiRequest<{ results: any[] }>(
+      detectorProfileId
+        ? `/anomalies/latest?detector_profile_id=${encodeURIComponent(detectorProfileId)}`
+        : '/anomalies/latest',
+    ),
 }
