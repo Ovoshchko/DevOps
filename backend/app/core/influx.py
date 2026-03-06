@@ -10,3 +10,11 @@ def get_influx_client() -> InfluxDBClient:
         token=settings.influx_token,
         org=settings.influx_org,
     )
+
+
+def is_influx_available() -> bool:
+    try:
+        with get_influx_client() as client:
+            return bool(client.ping())
+    except Exception:
+        return False

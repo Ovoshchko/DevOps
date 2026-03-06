@@ -8,8 +8,8 @@ from typing import Iterator
 def transactional_scope() -> Iterator[None]:
     """Unified transaction boundary for repository operations.
 
-    Current implementation is no-op because repositories can run in file-backed
-    mode for local/test environments.
+    Repositories own transaction boundaries directly via DB drivers,
+    so this scope is reserved for future cross-repository orchestration.
     """
 
     yield
