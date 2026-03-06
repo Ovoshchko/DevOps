@@ -2,12 +2,70 @@
 
 Репозиторий для лабораторных по дисциплине DevOps.
 
+## ЛР1: Отчёт
+- Подробное описание системы и соответствие пунктам задания:  
+  [`docs/lab1-report.md`](docs/lab1-report.md)
+
 ## Services
 - `backend/` - FastAPI REST API for detector profiles, traffic ingest, monitoring, detections, generator jobs
 - `frontend/` - React web client (react-scripts runtime, no Vite)
 - `ml-service/` - FastAPI ML inference service
 - `postgres` - durable operational store for detector/detection/generator domain
 - `influxdb` - time-series store for traffic points
+
+## Architecture
+```mermaid
+flowchart LR
+    U[Operator] --> FE[Frontend React]
+    FE -->|REST| BE[Backend FastAPI]
+    BE -->|HTTP /inference| ML[ML Service FastAPI]
+    BE -->|SQL| PG[(PostgreSQL)]
+    BE -->|Write/Read metrics| IFX[(InfluxDB)]
+```
+
+## Flow 1: Detector Lifecycle + Detection Run
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant FE as Frontend
+    participant BE as Backend
+    participant PG as PostgreSQL
+    participant ML as ML Service
+
+    U->>FE: Create DetectorConfig
+    FE->>BE: POST /detectors
+    BE->>PG: Save detector config
+    PG-->>BE: OK
+    BE-->>FE: Detector created
+
+    U->>FE: Run detection for selected detector
+    FE->>BE: POST /detections/run (detector_config_id)
+    BE->>PG: Load detector settings
+    BE->>ML: Score window metrics
+    ML-->>BE: anomaly_score
+    BE->>PG: Save run + summary/results
+    BE-->>FE: DetectionRun response
+```
+
+## Flow 2: Traffic Ingest + Monitoring
+```mermaid
+sequenceDiagram
+    participant G as Generator/UI
+    participant FE as Frontend
+    participant BE as Backend
+    participant IFX as InfluxDB
+
+    G->>FE: Generate synthetic points
+    FE->>BE: POST /traffic/ingest
+    BE->>IFX: Write TrafficPoint batch
+    IFX-->>BE: Ack
+    BE-->>FE: accepted=N
+
+    FE->>BE: GET /traffic/latest
+    BE->>IFX: Query recent points
+    IFX-->>BE: points
+    BE-->>FE: points for monitoring widgets
+```
 
 ## Quick Start
 1. Build and start stack:
