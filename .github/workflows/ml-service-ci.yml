@@ -19,7 +19,7 @@ jobs:
         with:
           python-version: '3.11'
       - name: Install dependencies
-        run: pip install -e 'ml-service[dev]'
+        run: pip install './ml-service[dev]'
       - name: Run tests
         run: PYTHONPATH=ml-service python -m pytest -q ml-service/tests
 
@@ -32,6 +32,6 @@ jobs:
         with:
           python-version: '3.11'
       - name: Install dependencies
-        run: pip install -e 'ml-service[dev]'
+        run: pip install './ml-service[dev]'
       - name: Build package
         run: python -m pip wheel --no-deps --wheel-dir /tmp/wheels ./ml-service

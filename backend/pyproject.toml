@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "traffic-anomaly-backend"
 version = "0.1.0"
@@ -13,3 +17,6 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.2.0", "pytest-cov>=5.0.0"]
+
+[tool.setuptools.packages.find]
+include = ["app*"]

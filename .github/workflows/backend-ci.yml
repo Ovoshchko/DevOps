@@ -19,7 +19,7 @@ jobs:
         with:
           python-version: '3.11'
       - name: Install dependencies
-        run: pip install -e 'backend[dev]'
+        run: pip install './backend[dev]'
       - name: Run tests
         run: PYTHONPATH=. python -m pytest -q backend/tests
 
@@ -32,6 +32,6 @@ jobs:
         with:
           python-version: '3.11'
       - name: Install dependencies
-        run: pip install -e 'backend[dev]'
+        run: pip install './backend[dev]'
       - name: Build package
         run: python -m pip wheel --no-deps --wheel-dir /tmp/wheels ./backend
