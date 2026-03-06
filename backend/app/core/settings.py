@@ -16,7 +16,6 @@ class Settings(BaseModel):
         'POSTGRES_DSN',
         'postgresql://traffic:traffic@localhost:5432/traffic',
     )
-    store_dir: str = os.getenv('STORE_DIR', '/tmp/traffic-anomaly-store')
 
 
 settings = Settings()

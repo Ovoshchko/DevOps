@@ -13,7 +13,12 @@ service = DetectionService()
 
 @router.post('/detections/run', status_code=201)
 async def run_detection(payload: DetectionRunRequest):
-    return await service.run(payload)
+    try:
+        return await service.run(payload)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 @router.get('/detections')

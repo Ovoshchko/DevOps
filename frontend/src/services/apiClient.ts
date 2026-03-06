@@ -22,7 +22,6 @@ export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T
       const body = (await res.json()) as { error?: string; detail?: string; message?: string }
       msg = body.error || body.detail || body.message || msg
     } catch {
-      // keep fallback
     }
     throw new ApiError(res.status, msg)
   }
