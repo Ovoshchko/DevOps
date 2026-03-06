@@ -1,17 +1,22 @@
 import asyncio
-from datetime import datetime, timezone, timedelta
-from backend.app.services.detection_service import DetectionService
+from datetime import datetime, timedelta, timezone
+
 from backend.app.api.schemas.detection import DetectionRunRequest
+from backend.app.services.detection_service import DetectionService
 
 
 def test_detection_service_run():
     service = DetectionService()
     now = datetime.now(timezone.utc)
-    result = asyncio.run(service.run(DetectionRunRequest(
-        detector_config_id='det-1',
-        window_start=now - timedelta(minutes=1),
-        window_end=now,
-        initiated_by='tester'
-    )))
+    result = asyncio.run(
+        service.run(
+            DetectionRunRequest(
+                detector_config_id='det-1',
+                window_start=now - timedelta(minutes=1),
+                window_end=now,
+                initiated_by='tester',
+            )
+        )
+    )
     assert result.id
-    assert result.model_version
+    assert result.status in {'running', 'completed'}

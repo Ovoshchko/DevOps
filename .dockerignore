@@ -17,3 +17,6 @@ ml-service/__pycache__
 .idea
 .DS_Store
 specs/*/tasks.md
+Dockerfile*
+.dockerignore
+coverage/

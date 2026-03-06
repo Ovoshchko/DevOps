@@ -1,16 +1,32 @@
 # DevOps
-Репозиторий для лабораторных по дисциплине DevOps
+
+Репозиторий для лабораторных по дисциплине DevOps.
 
 ## Services
-- `backend/` - FastAPI REST API for detectors, traffic ingest, monitoring, detections
-- `frontend/` - React web client
+- `backend/` - FastAPI REST API for detector profiles, traffic ingest, monitoring, detections, generator jobs
+- `frontend/` - React web client (react-scripts runtime, no Vite)
 - `ml-service/` - FastAPI ML inference service
+- `postgres` - durable operational store for detector/detection/generator domain
+- `influxdb` - time-series store for traffic points
+
+## Quick Start
+1. Build and start stack:
+   - `docker compose up -d --build`
+2. Open frontend:
+   - `http://localhost:3000`
+3. API docs:
+   - `http://localhost:8000/docs`
+
+Detailed feature validation steps:
+- `specs/001-rework-detector-workflow/quickstart.md`
 
 ## Local Validation
-1. Run backend unit tests from `backend/`
-2. Run frontend unit tests from `frontend/`
-3. Run ML unit tests from `ml-service/`
-4. Validate API flow described in `specs/001-traffic-anomaly-platform/quickstart.md`
+1. Frontend unit tests + build:
+   - `cd frontend && npm run typecheck && npm test && npm run build`
+2. Backend tests:
+   - `PYTHONPATH=. .venv/bin/python -m pytest -q backend/tests`
+3. ML service tests:
+   - `PYTHONPATH=ml-service .venv/bin/python -m pytest -q ml-service/tests`
 
 ## Engineering Governance
 Проектные правила разработки и качества закреплены в

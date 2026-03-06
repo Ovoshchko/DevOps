@@ -1,0 +1,28 @@
+{
+  "points": [
+    {
+      "timestamp": "2026-03-06T10:00:00Z",
+      "source_id": "sim-sensor-1",
+      "metrics": {
+        "bytes_per_sec": 320,
+        "packets_per_sec": 28
+      },
+      "tags": {
+        "profile": "demo-profile",
+        "mode": "synthetic"
+      }
+    },
+    {
+      "timestamp": "2026-03-06T10:00:01Z",
+      "source_id": "sim-sensor-2",
+      "metrics": {
+        "bytes_per_sec": 640,
+        "packets_per_sec": 55
+      },
+      "tags": {
+        "profile": "demo-profile",
+        "mode": "synthetic"
+      }
+    }
+  ]
+}

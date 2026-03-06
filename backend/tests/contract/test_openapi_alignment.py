@@ -1,13 +1,19 @@
-from pathlib import Path
+from backend.app.main import app
 
 
 def test_openapi_contains_required_paths():
-    spec = Path('specs/001-traffic-anomaly-platform/contracts/openapi.yaml').read_text()
+    openapi = app.openapi()
+    paths = set(openapi.get('paths', {}).keys())
+
     for required in [
         '/detectors',
         '/traffic/ingest',
         '/detections/run',
+        '/detections/{detection_id}/results',
         '/traffic/latest',
         '/anomalies/latest',
+        '/generator/jobs',
+        '/generator/jobs/{job_id}',
+        '/generator/jobs/{job_id}/stop',
     ]:
-        assert required in spec
+        assert required in paths

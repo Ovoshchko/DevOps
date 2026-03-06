@@ -1,15 +1,22 @@
 import React from 'react'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { DetectorsPage } from '../../src/pages/DetectorsPage'
 
 beforeEach(() => {
-  vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, status: 200, json: async () => [] } as any)))
+  jest.spyOn(global, 'fetch').mockImplementation(async () => {
+    return {
+      ok: true,
+      status: 200,
+      json: async () => [],
+    } as Response
+  })
 })
 
-describe('DetectorsPage', () => {
-  it('renders detectors title', () => {
-    render(<DetectorsPage />)
-    expect(screen.getByText('Detectors')).toBeDefined()
-  })
+afterEach(() => {
+  jest.restoreAllMocks()
+})
+
+test('renders detectors title', async () => {
+  render(<DetectorsPage />)
+  await waitFor(() => expect(screen.getByText('Detectors')).toBeInTheDocument())
 })

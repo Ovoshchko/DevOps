@@ -1,0 +1,262 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`detections page snapshot 1`] = `
+<DocumentFragment>
+  <main>
+    <h2>
+      Detections
+    </h2>
+    <div
+      class="panel"
+    >
+      <h3>
+        Detection run
+      </h3>
+      <p
+        class="small"
+      >
+        Start anomaly detection for the last one minute window.
+      </p>
+      <button
+        class="primary"
+        type="button"
+      >
+        Run detection
+      </button>
+    </div>
+    <section
+      class="panel"
+    >
+      <h3>
+        Detection runs
+      </h3>
+      <table>
+        <thead>
+          <tr>
+            <th>
+              ID
+            </th>
+            <th>
+              Status
+            </th>
+            <th>
+              Window Start
+            </th>
+            <th>
+              Window End
+            </th>
+          </tr>
+        </thead>
+        <tbody />
+      </table>
+    </section>
+  </main>
+</DocumentFragment>
+`;
+
+exports[`detectors page snapshot 1`] = `
+<DocumentFragment>
+  <main>
+    <h2>
+      Detectors
+    </h2>
+    <form
+      class="panel"
+    >
+      <h3>
+        Create detector
+      </h3>
+      <div
+        class="form-grid"
+      >
+        <label>
+          Detector name
+          <input
+            minlength="3"
+            required=""
+            value="Default detector"
+          />
+        </label>
+        <label>
+          Status
+          <select>
+            <option
+              value="draft"
+            >
+              Draft
+            </option>
+            <option
+              value="active"
+            >
+              Active
+            </option>
+            <option
+              value="archived"
+            >
+              Archived
+            </option>
+          </select>
+        </label>
+        <label>
+          Description
+          <input
+            maxlength="180"
+            required=""
+            value="Detects traffic spikes in rolling windows"
+          />
+        </label>
+        <label>
+          Sensitivity (0.1 - 1.0)
+          <input
+            max="1"
+            min="0.1"
+            required=""
+            step="0.05"
+            type="number"
+            value="0.7"
+          />
+        </label>
+        <label>
+          Window size (seconds)
+          <input
+            max="3600"
+            min="10"
+            required=""
+            step="10"
+            type="number"
+            value="60"
+          />
+        </label>
+        <label>
+          Window step (seconds)
+          <input
+            max="900"
+            min="5"
+            required=""
+            step="5"
+            type="number"
+            value="30"
+          />
+        </label>
+        <label>
+          Features (comma-separated)
+          <input
+            placeholder="bytes_per_sec, packets_per_sec, latency_ms"
+            required=""
+            value="bytes_per_sec, packets_per_sec"
+          />
+        </label>
+      </div>
+      <div
+        style="margin-top: 12px;"
+      >
+        <button
+          class="primary"
+          type="submit"
+        >
+          Save detector
+        </button>
+      </div>
+    </form>
+    <section
+      class="panel"
+    >
+      <h3>
+        Configured detectors
+      </h3>
+      <p
+        class="small"
+      >
+        No detectors created yet.
+      </p>
+      <ul />
+    </section>
+  </main>
+</DocumentFragment>
+`;
+
+exports[`monitoring page snapshot 1`] = `
+<DocumentFragment>
+  <main>
+    <h2>
+      Monitoring
+    </h2>
+    <section
+      class="panel"
+    >
+      <h3>
+        Live filter
+      </h3>
+      <label>
+        Active detector profile id
+        <input
+          placeholder="optional detector id"
+          value=""
+        />
+      </label>
+      <div
+        style="margin-top: 12px; display: flex; gap: 8px;"
+      >
+        <button
+          type="button"
+        >
+          Refresh now
+        </button>
+      </div>
+      <p
+        class="small"
+        style="margin-top: 8px;"
+      >
+        No recent traffic
+      </p>
+    </section>
+    <section
+      class="page-grid-two"
+    >
+      <section
+        class="panel"
+      >
+        <h3>
+          Latest Traffic
+        </h3>
+        <p
+          class="small"
+        >
+          Points received: 0. Avg throughput (last 0): 0 bytes/sec
+        </p>
+        <p
+          class="small"
+        >
+          No traffic yet.
+        </p>
+      </section>
+      <section
+        class="panel"
+      >
+        <h3>
+          Latest Anomalies
+        </h3>
+        <p
+          class="small"
+        >
+          Recent results: 0
+        </p>
+        <p
+          class="small"
+        >
+          No anomaly results yet.
+        </p>
+      </section>
+    </section>
+    <section
+      class="panel"
+    >
+      <p
+        class="small"
+      >
+        Traffic points: 0, anomalies: 0
+      </p>
+    </section>
+  </main>
+</DocumentFragment>
+`;
