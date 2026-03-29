@@ -1,5 +1,5 @@
 import React from 'react'
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { DetectorsPage } from '../pages/DetectorsPage'
 import { MonitoringPage } from '../pages/MonitoringPage'
 import { DetectionsPage } from '../pages/DetectionsPage'
@@ -57,17 +57,20 @@ afterEach(() => {
   jest.restoreAllMocks()
 })
 
-test('detectors page snapshot', () => {
+test('detectors page snapshot', async () => {
   const { asFragment } = render(<DetectorsPage />)
+  await screen.findByText('Detector A')
   expect(asFragment()).toMatchSnapshot()
 })
 
-test('monitoring page snapshot', () => {
+test('monitoring page snapshot', async () => {
   const { asFragment } = render(<MonitoringPage />)
+  await screen.findByText('Monitoring')
   expect(asFragment()).toMatchSnapshot()
 })
 
-test('detections page snapshot', () => {
+test('detections page snapshot', async () => {
   const { asFragment } = render(<DetectionsPage />)
+  await screen.findByText('0.91')
   expect(asFragment()).toMatchSnapshot()
 })

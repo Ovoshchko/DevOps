@@ -1,5 +1,5 @@
 import React from 'react'
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 
 import { DetectionsPage } from '../pages/DetectionsPage'
 import { DetectorsPage } from '../pages/DetectorsPage'
@@ -21,22 +21,27 @@ afterEach(() => {
   jest.restoreAllMocks()
 })
 
-test('detectors workspace snapshot', () => {
+test('detectors workspace snapshot', async () => {
   const { asFragment } = render(<DetectorsPage />)
+  await screen.findByRole('heading', { name: 'Detectors' })
   expect(asFragment()).toMatchSnapshot()
 })
 
-test('monitoring workspace snapshot', () => {
+test('monitoring workspace snapshot', async () => {
   const { asFragment } = render(<MonitoringPage />)
+  await screen.findByRole('heading', { name: 'Monitoring' })
   expect(asFragment()).toMatchSnapshot()
 })
 
-test('generator workspace snapshot', () => {
+test('generator workspace snapshot', async () => {
   const { asFragment } = render(<GeneratorPage />)
+  await screen.findByRole('button', { name: 'Start' })
   expect(asFragment()).toMatchSnapshot()
 })
 
-test('detections workspace snapshot', () => {
+test('detections workspace snapshot', async () => {
   const { asFragment } = render(<DetectionsPage />)
+  await screen.findByRole('heading', { name: 'Detections' })
+  await screen.findByText(/Active detector:/)
   expect(asFragment()).toMatchSnapshot()
 })

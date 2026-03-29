@@ -25,4 +25,5 @@ test('switches between app sections from top navigation', async () => {
 
   fireEvent.click(screen.getByRole('button', { name: 'Detections' }))
   expect(screen.getByRole('heading', { name: 'Detections' })).toBeInTheDocument()
+  await screen.findByText(/Active detector:/)
 })
