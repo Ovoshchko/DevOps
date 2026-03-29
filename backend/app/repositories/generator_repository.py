@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from uuid import uuid4
 
-try:  # pragma: no cover - exercised in integration/runtime environments
+try:
     from psycopg.rows import dict_row
 except Exception:  # pragma: no cover - allows unit tests without psycopg installed
     dict_row = None

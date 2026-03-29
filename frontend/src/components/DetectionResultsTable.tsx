@@ -12,6 +12,11 @@ export function DetectionResultsTable({ results }: { results: any[] }) {
     return value.join(', ')
   }
 
+  const formatScore = (value: unknown) => {
+    if (typeof value !== 'number' || Number.isNaN(value)) return '-'
+    return value.toFixed(2)
+  }
+
   return (
     <section className="panel">
       <h3>Detection runs</h3>
@@ -24,6 +29,7 @@ export function DetectionResultsTable({ results }: { results: any[] }) {
             <th>Window</th>
             <th>Threshold</th>
             <th>Features</th>
+            <th>Score</th>
             <th>Anomaly</th>
           </tr>
         </thead>
@@ -38,6 +44,7 @@ export function DetectionResultsTable({ results }: { results: any[] }) {
               </td>
               <td>{r.summary?.threshold ?? '-'}</td>
               <td>{formatFeatures(r.summary?.features)}</td>
+              <td>{formatScore(r.summary?.anomaly_score)}</td>
               <td>{typeof r.summary?.is_anomaly === 'boolean' ? String(r.summary.is_anomaly) : '-'}</td>
             </tr>
           ))}

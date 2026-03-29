@@ -133,6 +133,7 @@ celerybeat.pid
 
 # SageMath parsed files
 *.sage.py
+.claude/
 
 # Environments
 .env
@@ -210,6 +211,7 @@ coverage/
 .env*
 .codex
 .specify
+.agents
 specs
 *.tmp
 *.swp

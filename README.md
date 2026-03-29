@@ -9,7 +9,7 @@
 ## Services
 - `backend/` - FastAPI REST API for detector profiles, traffic ingest, monitoring, detections, generator jobs
 - `frontend/` - React web client (react-scripts runtime, no Vite)
-- `ml-service/` - FastAPI ML inference service
+- `ml-service/` - FastAPI ML inference service using packaged scaler/model artifacts from `ml-service/models/v0/`
 - `postgres` - durable operational store for detector/detection/generator domain
 - `influxdb` - time-series store for traffic points
 
@@ -46,6 +46,12 @@ sequenceDiagram
     BE->>PG: Save run + summary/results
     BE-->>FE: DetectionRun response
 ```
+
+Detection results shown in the Detections tab include the model anomaly score when it is present in
+the run summary payload.
+During detection runs, the backend prepares the full model-compatible metric set for `ml-service`;
+when source traffic metrics are partial, derived values and safe defaults are used without changing
+the run summary contract exposed to operators.
 
 ## Flow 2: Traffic Ingest + Monitoring
 ```mermaid
