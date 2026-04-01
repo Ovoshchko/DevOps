@@ -2,9 +2,6 @@ name: ML Service CI
 
 on:
   push:
-    paths:
-      - 'ml-service/**'
-      - '.github/workflows/ml-service-ci.yml'
 
 jobs:
   test-ml-service:

@@ -2,10 +2,9 @@ FROM python:3.11-slim
 
 WORKDIR /srv/ml-service
 
-RUN pip install --no-cache-dir \
-    fastapi==0.110.0 \
-    uvicorn==0.30.0 \
-    pydantic==2.7.4
+COPY ml-service/pyproject.toml /srv/ml-service/pyproject.toml
+
+RUN pip install --no-cache-dir /srv/ml-service
 
 COPY ml-service /srv/ml-service
 

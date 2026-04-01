@@ -19,19 +19,16 @@ exports[`detections page snapshot 1`] = `
       </p>
       <label>
         Detector
-        <select
-          disabled=""
-        >
+        <select>
           <option
-            value=""
+            value="det-1"
           >
-            No detectors available
+            Detector A (active)
           </option>
         </select>
       </label>
       <button
         class="primary"
-        disabled=""
         style="margin-top: 12px;"
         type="button"
       >
@@ -44,7 +41,7 @@ exports[`detections page snapshot 1`] = `
       <p
         class="small"
       >
-        Active detector: not selected 
+        Active detector: Detector A (det-1)
       </p>
     </section>
     <section
@@ -75,11 +72,67 @@ exports[`detections page snapshot 1`] = `
               Features
             </th>
             <th>
+              Score
+            </th>
+            <th>
               Anomaly
             </th>
           </tr>
         </thead>
-        <tbody />
+        <tbody>
+          <tr>
+            <td>
+              run-1
+            </td>
+            <td>
+              det-1
+            </td>
+            <td>
+              completed
+            </td>
+            <td>
+              3/29/2026, 10:00:00 AM - 3/29/2026, 10:05:00 AM
+            </td>
+            <td>
+              0.7
+            </td>
+            <td>
+              bytes_per_sec
+            </td>
+            <td>
+              0.91
+            </td>
+            <td>
+              true
+            </td>
+          </tr>
+          <tr>
+            <td>
+              run-2
+            </td>
+            <td>
+              det-1
+            </td>
+            <td>
+              completed
+            </td>
+            <td>
+              3/29/2026, 10:05:00 AM - 3/29/2026, 10:10:00 AM
+            </td>
+            <td>
+              0.7
+            </td>
+            <td>
+              packets_per_sec
+            </td>
+            <td>
+              -
+            </td>
+            <td>
+              false
+            </td>
+          </tr>
+        </tbody>
       </table>
     </section>
   </main>
@@ -196,12 +249,25 @@ exports[`detectors page snapshot 1`] = `
       <h3>
         Configured detectors
       </h3>
-      <p
-        class="small"
-      >
-        No detectors created yet.
-      </p>
-      <ul />
+      <ul>
+        <li>
+          <strong>
+            Detector A
+          </strong>
+           (active) 
+          <span
+            class="small"
+          >
+            sensitivity: -, window: -s / -s, features: -
+          </span>
+           
+          <button
+            type="button"
+          >
+            Archive
+          </button>
+        </li>
+      </ul>
     </section>
   </main>
 </DocumentFragment>

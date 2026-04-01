@@ -8,7 +8,7 @@ from backend.app.api.schemas.detection import DetectionRunRequest
 from backend.app.api.schemas.detection import DetectionResult, DetectionRunOut
 from backend.app.api.schemas.traffic import TrafficPoint
 from backend.app.api.schemas.detector import DetectorStatus
-from backend.app.services.detection_service import DetectionService
+from backend.app.services.detection_service import DetectionService, MODEL_FEATURE_NAMES
 
 
 class FakeDetectionRepo:
@@ -143,8 +143,144 @@ def test_detection_service_run_applies_detector_configuration():
     assert result.summary.get('features') == ['bytes_per_sec']
     assert traffic_repo.last_limit == 60
     assert ml_client.received_metrics is not None
-    assert all('bytes_per_sec' in item for item in ml_client.received_metrics)
-    assert all('packets_per_sec' not in item for item in ml_client.received_metrics)
+    assert all(tuple(item.keys()) == MODEL_FEATURE_NAMES for item in ml_client.received_metrics)
+    assert ml_client.received_metrics[0]['packet_size'] == 0.04
+    assert ml_client.received_metrics[0]['mean_packet_size'] == 0.04
+    assert ml_client.received_metrics[0]['packet_count_5s'] == 50.0
+    assert ml_client.received_metrics[0]['inter_arrival_time'] == 0.1
+    latest_result = detection_repo.get_results(result.id)[-1]
+    assert latest_result.metrics_snapshot == {'bytes_per_sec': 0.8, 'packets_per_sec': 20.0}
+
+
+def test_detection_service_expands_every_sample_to_full_model_payload():
+    detector = _build_detector()
+    detection_repo = FakeDetectionRepo()
+    traffic_repo = FakeTrafficRepo(_build_points())
+    ml_client = FakeMLClient(score=0.33)
+    service = DetectionService(
+        detection_repo=detection_repo,
+        detector_repo=FakeDetectorRepo(detector),
+        traffic_repo=traffic_repo,
+        ml_client=ml_client,
+    )
+
+    now = datetime.now(timezone.utc)
+    asyncio.run(
+        service.run(
+            DetectionRunRequest(
+                detector_config_id='det-1',
+                window_start=now - timedelta(minutes=1),
+                window_end=now,
+            )
+        )
+    )
+
+    assert ml_client.received_metrics is not None
+    assert len(ml_client.received_metrics) == 2
+    assert all(set(sample) == set(MODEL_FEATURE_NAMES) for sample in ml_client.received_metrics)
+    assert ml_client.received_metrics[1]['packet_size'] == 0.04
+    assert ml_client.received_metrics[1]['tcp_flags_SYN'] == 0.0
+
+
+def test_detection_service_defaults_missing_model_metrics_for_partial_points():
+    now = datetime.now(timezone.utc)
+    points = [
+        TrafficPoint(
+            timestamp=now,
+            source_id='sensor-a',
+            metrics={'bytes_per_sec': 150.0},
+        )
+    ]
+    service = DetectionService(
+        detection_repo=FakeDetectionRepo(),
+        detector_repo=FakeDetectorRepo(_build_detector()),
+        traffic_repo=FakeTrafficRepo(points),
+        ml_client=FakeMLClient(score=0.2),
+    )
+
+    asyncio.run(
+        service.run(
+            DetectionRunRequest(
+                detector_config_id='det-1',
+                window_start=now - timedelta(minutes=1),
+                window_end=now,
+            )
+        )
+    )
+
+    sample = service.ml_client.received_metrics[0]
+    assert sample['packet_size'] == 150.0
+    assert sample['mean_packet_size'] == 150.0
+    assert sample['packet_count_5s'] == 0.0
+    assert sample['protocol_type_TCP'] == 0.0
+
+
+def test_detection_service_sanitizes_non_numeric_metrics_from_repository_points():
+    now = datetime.now(timezone.utc)
+    point = TrafficPoint.model_construct(
+        timestamp=now,
+        source_id='sensor-a',
+        metrics={'bytes_per_sec': 'bad-value', 'packets_per_sec': 5.0, 'src_port': True},
+        tags=None,
+    )
+    ml_client = FakeMLClient(score=0.1)
+    service = DetectionService(
+        detection_repo=FakeDetectionRepo(),
+        detector_repo=FakeDetectorRepo(_build_detector()),
+        traffic_repo=FakeTrafficRepo([point]),
+        ml_client=ml_client,
+    )
+
+    asyncio.run(
+        service.run(
+            DetectionRunRequest(
+                detector_config_id='det-1',
+                window_start=now - timedelta(minutes=1),
+                window_end=now,
+            )
+        )
+    )
+
+    sample = ml_client.received_metrics[0]
+    assert sample['packet_size'] == 0.0
+    assert sample['packet_count_5s'] == 25.0
+    assert sample['inter_arrival_time'] == 0.2
+    assert sample['src_port'] == 1.0
+
+
+def test_detection_service_preserves_detector_review_context_with_expanded_inference_payload():
+    detector = _build_detector()
+    detection_repo = FakeDetectionRepo()
+    ml_client = FakeMLClient(score=0.49)
+    service = DetectionService(
+        detection_repo=detection_repo,
+        detector_repo=FakeDetectorRepo(detector),
+        traffic_repo=FakeTrafficRepo(_build_points()),
+        ml_client=ml_client,
+    )
+
+    now = datetime.now(timezone.utc)
+    result = asyncio.run(
+        service.run(
+            DetectionRunRequest(
+                detector_config_id='det-1',
+                window_start=now - timedelta(minutes=1),
+                window_end=now,
+            )
+        )
+    )
+
+    latest_result = detection_repo.get_results(result.id)[-1]
+    assert result.summary == {
+        'anomaly_score': 0.49,
+        'is_anomaly': False,
+        'threshold': 0.5,
+        'window_size_seconds': 60,
+        'window_step_seconds': 30,
+        'features': ['bytes_per_sec'],
+        'result_count': 1,
+    }
+    assert latest_result.explanation == 'detector=unit-detector; threshold=0.5; features=bytes_per_sec'
 
 
 def test_detection_service_raises_if_detector_not_found():

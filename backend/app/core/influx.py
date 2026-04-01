@@ -1,10 +1,13 @@
 from __future__ import annotations
 
-from influxdb_client import InfluxDBClient
+from typing import Any
+
 from .settings import settings
 
 
-def get_influx_client() -> InfluxDBClient:
+def get_influx_client() -> Any:
+    from influxdb_client import InfluxDBClient
+
     return InfluxDBClient(
         url=settings.influx_url,
         token=settings.influx_token,

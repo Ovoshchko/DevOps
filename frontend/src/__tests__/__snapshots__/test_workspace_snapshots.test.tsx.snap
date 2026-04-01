@@ -75,6 +75,9 @@ exports[`detections workspace snapshot 1`] = `
               Features
             </th>
             <th>
+              Score
+            </th>
+            <th>
               Anomaly
             </th>
           </tr>
