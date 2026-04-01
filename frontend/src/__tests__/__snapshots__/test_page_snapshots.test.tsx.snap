@@ -91,7 +91,7 @@ exports[`detections page snapshot 1`] = `
               completed
             </td>
             <td>
-              3/29/2026, 1:00:00 PM - 3/29/2026, 1:05:00 PM
+              3/29/2026, 10:00:00 AM - 3/29/2026, 10:05:00 AM
             </td>
             <td>
               0.7
@@ -117,7 +117,7 @@ exports[`detections page snapshot 1`] = `
               completed
             </td>
             <td>
-              3/29/2026, 1:05:00 PM - 3/29/2026, 1:10:00 PM
+              3/29/2026, 10:05:00 AM - 3/29/2026, 10:10:00 AM
             </td>
             <td>
               0.7

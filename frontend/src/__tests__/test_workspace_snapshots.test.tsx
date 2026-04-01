@@ -29,7 +29,7 @@ test('detectors workspace snapshot', async () => {
 
 test('monitoring workspace snapshot', async () => {
   const { asFragment } = render(<MonitoringPage />)
-  await screen.findByRole('heading', { name: 'Monitoring' })
+  await screen.findByText(/Traffic points:/)
   expect(asFragment()).toMatchSnapshot()
 })
 

@@ -1,5 +1,5 @@
 import React from 'react'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 
 import { MonitoringPage } from '../pages/MonitoringPage'
 
@@ -20,9 +20,11 @@ afterEach(() => {
   jest.restoreAllMocks()
 })
 
-test('monitoring page exposes detector profile filter input', () => {
+test('monitoring page exposes detector profile filter input', async () => {
   render(<MonitoringPage />)
+  await screen.findByText(/Traffic points:/)
   const input = screen.getByPlaceholderText('optional detector id')
   fireEvent.change(input, { target: { value: 'abc' } })
   expect((input as HTMLInputElement).value).toBe('abc')
+  await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(4))
 })

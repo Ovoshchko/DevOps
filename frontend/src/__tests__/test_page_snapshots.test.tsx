@@ -65,7 +65,7 @@ test('detectors page snapshot', async () => {
 
 test('monitoring page snapshot', async () => {
   const { asFragment } = render(<MonitoringPage />)
-  await screen.findByText('Monitoring')
+  await screen.findByText(/Traffic points:/)
   expect(asFragment()).toMatchSnapshot()
 })
 
