@@ -97,7 +97,8 @@ jobs:
       - run: echo "OWNER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
       - uses: docker/build-push-action@v6
         with:
-          context: ./backend
+          context: .
+          file: ./backend/Dockerfile
           push: true
           tags: ghcr.io/${{ env.OWNER }}/traffic-backend:latest
 
@@ -114,7 +115,8 @@ jobs:
       - run: echo "OWNER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
       - uses: docker/build-push-action@v6
         with:
-          context: ./ml-service
+          context: .
+          file: ./ml-service/Dockerfile
           push: true
           tags: ghcr.io/${{ env.OWNER }}/traffic-ml-service:latest
 
@@ -131,6 +133,7 @@ jobs:
       - run: echo "OWNER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
       - uses: docker/build-push-action@v6
         with:
-          context: ./frontend
+          context: .
+          file: ./frontend/Docker
           push: true
           tags: ghcr.io/${{ env.OWNER }}/traffic-frontend:latest
