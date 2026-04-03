@@ -94,11 +94,12 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - run: echo "OWNER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
       - uses: docker/build-push-action@v6
         with:
           context: ./backend
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/traffic-backend:latest
+          tags: ghcr.io/${{ env.OWNER }}/traffic-backend:latest
 
   ml-docker:
     runs-on: ubuntu-latest
@@ -110,11 +111,12 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - run: echo "OWNER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
       - uses: docker/build-push-action@v6
         with:
           context: ./ml-service
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/traffic-ml-service:latest
+          tags: ghcr.io/${{ env.OWNER }}/traffic-ml-service:latest
 
   frontend-docker:
     runs-on: ubuntu-latest
@@ -126,8 +128,9 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - run: echo "OWNER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
       - uses: docker/build-push-action@v6
         with:
           context: ./frontend
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/traffic-frontend:latest
+          tags: ghcr.io/${{ env.OWNER }}/traffic-frontend:latest
