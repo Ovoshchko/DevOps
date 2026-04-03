@@ -149,5 +149,5 @@ jobs:
 
       - run: pip install ansible ansible-lint
 
-      - run: ansible-playbook --syntax-check ansible/intall_docker.yml
+      - run: ansible-playbook --syntax-check ansible/install_docker.yml
       - run: ansible-lint ansible/deploy_app.yml
