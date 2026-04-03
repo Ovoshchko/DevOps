@@ -219,3 +219,7 @@ specs
 Thumbs.db
 .idea/
 .vscode/
+**/terraform.tfvars
+**.terraform
+**terraform.lock**
+**terraform.tfstate**

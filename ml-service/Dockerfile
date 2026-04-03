@@ -1,11 +1,19 @@
-FROM python:3.11-slim
+FROM python:3.11-slim as builder
 
 WORKDIR /srv/ml-service
 
 COPY ml-service/pyproject.toml /srv/ml-service/pyproject.toml
 
-RUN pip install --no-cache-dir /srv/ml-service
+RUN pip install --no-cache-dir --prefix=/install /srv/ml-service
 
+COPY ml-service /srv/ml-service
+
+
+FROM python:3.11-slim
+
+WORKDIR /srv/ml-service
+
+COPY --from=builder /install /usr/local
 COPY ml-service /srv/ml-service
 
 ENV PYTHONPATH=/srv/ml-service
