@@ -1,0 +1,138 @@
+name: CI Pipeline
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+
+  backend-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install './backend[dev]'
+      - run: PYTHONPATH=. python -m pytest backend/tests
+
+  ml-test:
+    runs-on: ubuntu-latest
+    needs: backend-test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install './ml-service[dev]'
+      - run: PYTHONPATH=ml-service python -m pytest ml-service/tests
+
+  frontend-test:
+    runs-on: ubuntu-latest
+    needs: ml-test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+        working-directory: frontend
+      - run: npm run typecheck
+        working-directory: frontend
+      - run: npm test -- --watchAll=false
+        working-directory: frontend
+
+  backend-build:
+    runs-on: ubuntu-latest
+    needs: frontend-test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install './backend[dev]'
+      - run: python -m pip wheel --no-deps --wheel-dir /tmp/wheels ./backend
+
+  ml-build:
+    runs-on: ubuntu-latest
+    needs: backend-build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install './ml-service[dev]'
+      - run: python -m pip wheel --no-deps --wheel-dir /tmp/wheels ./ml-service
+
+  frontend-build:
+    runs-on: ubuntu-latest
+    needs: ml-build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+        working-directory: frontend
+      - run: npm run build
+        working-directory: frontend
+
+  backend-docker:
+    runs-on: ubuntu-latest
+    needs: frontend-build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - run: echo "OWNER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./backend/Dockerfile
+          push: true
+          tags: ghcr.io/${{ env.OWNER }}/traffic-backend:latest
+
+  ml-docker:
+    runs-on: ubuntu-latest
+    needs: backend-docker
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - run: echo "OWNER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./ml-service/Dockerfile
+          push: true
+          tags: ghcr.io/${{ env.OWNER }}/traffic-ml-service:latest
+
+  frontend-docker:
+    runs-on: ubuntu-latest
+    needs: ml-docker
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - run: echo "OWNER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+      - uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: true
+          tags: ghcr.io/${{ env.OWNER }}/traffic-frontend:latest
