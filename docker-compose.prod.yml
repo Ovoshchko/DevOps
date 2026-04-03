@@ -1,0 +1,76 @@
+services:
+  influxdb:
+    image: influxdb:2.7
+    container_name: traffic-influxdb
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: admin
+      DOCKER_INFLUXDB_INIT_PASSWORD: adminadmin
+      DOCKER_INFLUXDB_INIT_ORG: devops
+      DOCKER_INFLUXDB_INIT_BUCKET: traffic
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: dev-token
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8086/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: traffic-postgres
+    environment:
+      POSTGRES_DB: traffic
+      POSTGRES_USER: traffic
+      POSTGRES_PASSWORD: traffic
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U traffic -d traffic"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  ml-service:
+    image: ghcr.io/ovoshchko/traffic-ml-service:latest
+    container_name: traffic-ml-service
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    image: ghcr.io/ovoshchko/traffic-backend:latest
+    container_name: traffic-backend
+    depends_on:
+      influxdb:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      ml-service:
+        condition: service_healthy
+    environment:
+      INFLUX_URL: http://influxdb:8086
+      INFLUX_TOKEN: dev-token
+      INFLUX_ORG: devops
+      INFLUX_BUCKET: traffic
+      ML_SERVICE_URL: http://ml-service:8001
+      POSTGRES_DSN: postgresql://traffic:traffic@postgres:5432/traffic
+    expose:
+      - "8000"
+
+  frontend:
+    image: ghcr.io/ovoshchko/traffic-frontend:latest
+    container_name: traffic-frontend
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d:ro
+
+volumes:
+  influxdb-data:
+  postgres-data:
