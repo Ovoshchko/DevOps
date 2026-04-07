@@ -1,0 +1,45 @@
+- name: Deploy application
+  hosts: all
+  become: yes
+
+  vars:
+    app_dir: /opt/traffic-analyzer
+    ghcr_username: "{{ lookup('env', 'GHCR_USER') }}"
+    ghcr_token: "{{ lookup('env', 'GHCR_TOKEN') }}"
+  
+  tasks:
+    - name: Create application directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Copy docker-compose file
+      copy:
+        src: ../docker-compose.prod.yml
+        dest: "{{ app_dir }}/docker-compose.prod.yml"
+        mode: "0644"
+    
+    - name: Create nginx directory
+      file:
+        path: "{{ app_dir }}/nginx"
+        state: directory
+        mode: '0755'
+
+    - name: Copy nginx config
+      copy:
+        src: ../nginx/default.conf
+        dest: "{{ app_dir }}/nginx/default.conf"
+        mode: '0644'
+
+    - name: Login to GHCR
+      shell: echo "{{ ghcr_token }}" | docker login ghcr.io -u "{{ ghcr_username }}" --password-stdin
+      args:
+        executable: /bin/bash
+      no_log: true
+
+    - name: Pull latest images
+      command: docker compose -f {{ app_dir }}/docker-compose.prod.yml pull
+
+    - name: Start application
+      command: docker compose -f {{ app_dir }}/docker-compose.prod.yml up -d
