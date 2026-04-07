@@ -38,8 +38,7 @@ services:
 
   ml-service:
     build:
-      context: .
-      dockerfile: ml-service/Dockerfile
+      context: ./ml-service
     container_name: traffic-ml-service
     ports:
       - "8001:8001"
@@ -51,8 +50,7 @@ services:
 
   backend:
     build:
-      context: .
-      dockerfile: backend/Dockerfile
+      context: ./backend
     container_name: traffic-backend
     depends_on:
       influxdb:

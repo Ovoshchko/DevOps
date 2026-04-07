@@ -1,20 +1,22 @@
-FROM python:3.11-slim as builder
+FROM python:3.11-slim AS builder
 
 WORKDIR /srv/backend
 
-COPY backend/pyproject.toml /srv/backend/pyproject.toml
+COPY pyproject.toml .
+COPY app ./app
 
-RUN pip install --no-cache-dir --prefix=/install /srv/backend
-
-COPY backend /srv/backend
+RUN pip install --no-cache-dir --prefix=/install .
 
 
 FROM python:3.11-slim
 
+WORKDIR /srv/backend
+
 COPY --from=builder /install /usr/local
-COPY backend /srv/backend
+COPY app ./app
 
 ENV PYTHONPATH=/srv/backend
+ENV PYTHONDONTWRITEBYTECODE=1
 
 EXPOSE 8000
 
