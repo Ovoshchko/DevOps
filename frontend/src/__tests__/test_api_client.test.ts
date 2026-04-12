@@ -22,7 +22,7 @@ describe('apiClient', () => {
     }))
 
     await expect(apiRequest<{ ok: boolean }>('detectors')).resolves.toEqual({ ok: true })
-    expect(fetchSpy).toHaveBeenCalledWith('http://localhost:8000/detectors', undefined)
+    expect(fetchSpy).toHaveBeenCalledWith('/api/detectors', undefined)
   })
 
   test('apiRequest returns undefined for 204 responses', async () => {
