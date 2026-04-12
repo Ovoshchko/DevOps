@@ -2,8 +2,6 @@ services:
   influxdb:
     image: influxdb:2.7
     container_name: traffic-influxdb
-    ports:
-      - "8086:8086"
     environment:
       DOCKER_INFLUXDB_INIT_MODE: setup
       DOCKER_INFLUXDB_INIT_USERNAME: admin
@@ -26,8 +24,6 @@ services:
       POSTGRES_DB: traffic
       POSTGRES_USER: traffic
       POSTGRES_PASSWORD: traffic
-    ports:
-      - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -37,11 +33,8 @@ services:
       retries: 10
 
   ml-service:
-    build:
-      context: ./ml-service
+    image: ghcr.io/ovoshchko/traffic-ml-service:latest
     container_name: traffic-ml-service
-    ports:
-      - "8001:8001"
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
       interval: 10s
@@ -49,8 +42,7 @@ services:
       retries: 10
 
   backend:
-    build:
-      context: ./backend
+    image: ghcr.io/ovoshchko/traffic-backend:latest
     container_name: traffic-backend
     depends_on:
       influxdb:
@@ -66,20 +58,18 @@ services:
       INFLUX_BUCKET: traffic
       ML_SERVICE_URL: http://ml-service:8001
       POSTGRES_DSN: postgresql://traffic:traffic@postgres:5432/traffic
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    image: ghcr.io/ovoshchko/traffic-frontend:latest
     container_name: traffic-frontend
     depends_on:
       - backend
-    environment:
-      REACT_APP_API_BASE_URL: http://localhost:8000
     ports:
       - "3000:80"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d:ro
 
 volumes:
   influxdb-data:
