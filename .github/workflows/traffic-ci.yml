@@ -99,7 +99,7 @@ jobs:
         with:
           context: ./backend
           file: ./backend/Dockerfile
-          push: true
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           tags: ghcr.io/${{ env.OWNER }}/traffic-backend:latest
 
   ml-docker:
@@ -117,7 +117,7 @@ jobs:
         with:
           context: ./ml-service
           file: ./ml-service/Dockerfile
-          push: true
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           tags: ghcr.io/${{ env.OWNER }}/traffic-ml-service:latest
 
   frontend-docker:
@@ -134,5 +134,5 @@ jobs:
       - uses: docker/build-push-action@v6
         with:
           context: ./frontend
-          push: true
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           tags: ghcr.io/${{ env.OWNER }}/traffic-frontend:latest
