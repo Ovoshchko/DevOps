@@ -8,6 +8,7 @@ from .api.middleware.logging import logging_middleware
 from .api.router import router
 from .core.influx import is_influx_available
 from .core.postgres import is_postgres_available, is_postgres_configured
+from .observability import metrics_response
 
 app = FastAPI(title='Traffic Anomaly Backend')
 register_error_handlers(app)
@@ -37,3 +38,8 @@ def health():
         'postgres_available': postgres_ok,
         'influx_available': influx_ok,
     }
+
+
+@app.get('/metrics')
+def metrics():
+    return metrics_response()
