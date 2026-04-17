@@ -223,5 +223,4 @@ Thumbs.db
 **.terraform
 **terraform.lock**
 **terraform.tfstate**
-k8s/secrets/secrets.yaml
-k8s/secrets/secrets.example.yaml
+**secrets.yaml
