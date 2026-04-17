@@ -177,6 +177,6 @@ spec:
     app: prometheus
   ports:
     - name: http
-      port: 9090
+      port: 80
       targetPort: http
   type: ClusterIP

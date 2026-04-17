@@ -24,7 +24,7 @@ spec:
               name: http
           env:
             - name: INFLUX_URL
-              value: http://influxdb:8086
+              value: http://influxdb
             - name: INFLUX_TOKEN
               valueFrom:
                 secretKeyRef:
@@ -35,7 +35,7 @@ spec:
             - name: INFLUX_BUCKET
               value: traffic
             - name: ML_SERVICE_URL
-              value: http://ml-service:8001
+              value: http://ml-service
             - name: POSTGRES_DSN
               valueFrom:
                 secretKeyRef:
@@ -71,6 +71,6 @@ spec:
     app: backend
   ports:
     - name: http
-      port: 8000
+      port: 80
       targetPort: http
   type: ClusterIP

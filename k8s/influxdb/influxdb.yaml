@@ -79,6 +79,6 @@ spec:
     app: influxdb
   ports:
     - name: http
-      port: 8086
+      port: 80
       targetPort: http
   type: ClusterIP

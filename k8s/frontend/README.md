@@ -1,6 +1,6 @@
 # Frontend on Kubernetes
 
-This frontend container already serves the React build through Nginx and proxies `/api/` to `http://backend:8000/`.
+This frontend container already serves the React build through Nginx and proxies `/api/` to `http://backend/`.
 
 Important:
 

@@ -52,6 +52,6 @@ spec:
     app: ml-service
   ports:
     - name: http
-      port: 8001
+      port: 80
       targetPort: http
   type: ClusterIP
