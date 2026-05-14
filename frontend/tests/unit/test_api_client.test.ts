@@ -1,4 +1,4 @@
-import { ApiError, apiRequest, toUserMessage } from '../services/apiClient'
+import { ApiError, apiRequest, toUserMessage } from '../../src/services/apiClient'
 
 const mockResponse = (value: { ok: boolean; status: number; json: () => Promise<unknown> }) =>
   value as unknown as Response

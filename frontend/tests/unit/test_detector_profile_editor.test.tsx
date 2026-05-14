@@ -1,7 +1,7 @@
 import React from 'react'
 import { render, screen } from '@testing-library/react'
 
-import { DetectorForm } from '../components/DetectorForm'
+import { DetectorForm } from '../../src/components/DetectorForm'
 
 
 test('detector profile editor renders base controls', () => {

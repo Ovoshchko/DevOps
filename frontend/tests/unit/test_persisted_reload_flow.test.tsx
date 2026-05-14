@@ -1,7 +1,7 @@
 import React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 
-import { DetectorsPage } from '../pages/DetectorsPage'
+import { DetectorsPage } from '../../src/pages/DetectorsPage'
 
 beforeEach(() => {
   jest.spyOn(global, 'fetch').mockImplementation(async () => {

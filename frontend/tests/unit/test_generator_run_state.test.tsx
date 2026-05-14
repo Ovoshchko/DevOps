@@ -1,6 +1,7 @@
 import React from 'react'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { MonitoringPage } from '../../src/pages/MonitoringPage'
+
+import { GeneratorPage } from '../../src/pages/GeneratorPage'
 
 beforeEach(() => {
   jest.spyOn(global, 'fetch').mockImplementation(async (input: RequestInfo | URL) => {
@@ -8,13 +9,7 @@ beforeEach(() => {
     if (url.includes('/traffic/ingest')) {
       return { ok: true, status: 202, json: async () => ({ accepted: 5 }) } as Response
     }
-    if (url.includes('/anomalies/latest')) {
-      return { ok: true, status: 200, json: async () => ({ results: [] }) } as Response
-    }
-    if (url.includes('/traffic/latest')) {
-      return { ok: true, status: 200, json: async () => ({ points: [] }) } as Response
-    }
-    return { ok: true, status: 200, json: async () => [] } as Response
+    return { ok: true, status: 200, json: async () => ({ results: [], points: [] }) } as Response
   })
 })
 
@@ -23,7 +18,7 @@ afterEach(() => {
 })
 
 test('transitions generator state from idle to running/completed', async () => {
-  render(<MonitoringPage />)
+  render(<GeneratorPage />)
 
   fireEvent.click(screen.getByRole('button', { name: 'Start' }))
 

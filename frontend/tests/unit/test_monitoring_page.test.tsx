@@ -22,4 +22,6 @@ afterEach(() => {
 test('renders monitoring title', async () => {
   render(<MonitoringPage />)
   await waitFor(() => expect(screen.getByText('Monitoring')).toBeInTheDocument())
+  expect(screen.getByText(/Points received:/)).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Refresh now' })).toBeInTheDocument()
 })

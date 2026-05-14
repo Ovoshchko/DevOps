@@ -1,7 +1,7 @@
 import React from 'react'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 
-import { MonitoringPage } from '../pages/MonitoringPage'
+import { MonitoringPage } from '../../src/pages/MonitoringPage'
 
 beforeEach(() => {
   jest.spyOn(global, 'fetch').mockImplementation(async (input: RequestInfo | URL) => {

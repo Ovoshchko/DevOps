@@ -1,7 +1,7 @@
 import React from 'react'
 import { render, screen } from '@testing-library/react'
 
-import { GeneratorPage } from '../pages/GeneratorPage'
+import { GeneratorPage } from '../../src/pages/GeneratorPage'
 
 beforeEach(() => {
   jest.spyOn(global, 'fetch').mockImplementation(async () => {

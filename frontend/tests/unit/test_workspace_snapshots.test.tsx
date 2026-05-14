@@ -1,10 +1,10 @@
 import React from 'react'
 import { render, screen } from '@testing-library/react'
 
-import { DetectionsPage } from '../pages/DetectionsPage'
-import { DetectorsPage } from '../pages/DetectorsPage'
-import { GeneratorPage } from '../pages/GeneratorPage'
-import { MonitoringPage } from '../pages/MonitoringPage'
+import { DetectionsPage } from '../../src/pages/DetectionsPage'
+import { DetectorsPage } from '../../src/pages/DetectorsPage'
+import { GeneratorPage } from '../../src/pages/GeneratorPage'
+import { MonitoringPage } from '../../src/pages/MonitoringPage'
 
 beforeEach(() => {
   jest.spyOn(global, 'fetch').mockImplementation(async (input: RequestInfo | URL) => {

@@ -1,5 +1,5 @@
 import React from 'react'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import App from '../../src/App'
 
 beforeEach(() => {
@@ -15,14 +15,15 @@ afterEach(() => {
   jest.restoreAllMocks()
 })
 
-test('switches between app sections from top navigation', () => {
+test('switches between app sections from top navigation', async () => {
   render(<App />)
 
-  expect(screen.getByText('Detectors')).toBeInTheDocument()
+  await waitFor(() => expect(screen.getByRole('heading', { name: 'Detectors' })).toBeInTheDocument())
 
   fireEvent.click(screen.getByRole('button', { name: 'Monitoring' }))
-  expect(screen.getByText('Monitoring')).toBeInTheDocument()
+  expect(screen.getByRole('heading', { name: 'Monitoring' })).toBeInTheDocument()
 
   fireEvent.click(screen.getByRole('button', { name: 'Detections' }))
-  expect(screen.getByText('Detections')).toBeInTheDocument()
+  expect(screen.getByRole('heading', { name: 'Detections' })).toBeInTheDocument()
+  await screen.findByText(/Active detector:/)
 })

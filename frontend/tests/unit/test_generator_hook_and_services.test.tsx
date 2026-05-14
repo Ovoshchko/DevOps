@@ -1,12 +1,12 @@
 import React from 'react'
 import { act, renderHook } from '@testing-library/react'
 
-import { DEFAULT_GENERATOR_CONFIG } from '../types/generator'
-import { TrafficGeneratorService } from '../services/trafficGeneratorService'
-import { useTrafficGenerator } from '../hooks/useTrafficGenerator'
-import { monitoringApi } from '../services/monitoringApi'
+import { DEFAULT_GENERATOR_CONFIG } from '../../src/types/generator'
+import { TrafficGeneratorService } from '../../src/services/trafficGeneratorService'
+import { useTrafficGenerator } from '../../src/hooks/useTrafficGenerator'
+import { monitoringApi } from '../../src/services/monitoringApi'
 
-jest.mock('../services/monitoringApi', () => ({
+jest.mock('../../src/services/monitoringApi', () => ({
   monitoringApi: {
     ingest: jest.fn(),
   },

@@ -1,9 +1,9 @@
 import React from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
 
-import { DetectionRunForm } from '../components/DetectionRunForm'
-import { DetectorForm } from '../components/DetectorForm'
-import { LatestTrafficWidget } from '../components/LatestTrafficWidget'
+import { DetectionRunForm } from '../../src/components/DetectionRunForm'
+import { DetectorForm } from '../../src/components/DetectorForm'
+import { LatestTrafficWidget } from '../../src/components/LatestTrafficWidget'
 
 describe('DetectorForm', () => {
   test('submits trimmed features and selected status', () => {

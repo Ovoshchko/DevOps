@@ -1,9 +1,9 @@
 import React from 'react'
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 
-import { DetectionsPage } from '../pages/DetectionsPage'
-import { DetectorsPage } from '../pages/DetectorsPage'
-import { MonitoringPage } from '../pages/MonitoringPage'
+import { DetectionsPage } from '../../src/pages/DetectionsPage'
+import { DetectorsPage } from '../../src/pages/DetectorsPage'
+import { MonitoringPage } from '../../src/pages/MonitoringPage'
 
 type DetectorRecord = {
   id: string

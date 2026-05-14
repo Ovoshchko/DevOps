@@ -1,21 +1,21 @@
 import React from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
 
-import { apiRequest } from '../services/apiClient'
-import { detectionsApi } from '../services/detectionsApi'
-import { detectorsApi } from '../services/detectorsApi'
-import { generatorApi } from '../services/generatorApi'
-import { monitoringApi } from '../services/monitoringApi'
-import { GeneratorPage } from '../pages/GeneratorPage'
-import { StatusBanner } from '../components/StatusBanner'
+import { apiRequest } from '../../src/services/apiClient'
+import { detectionsApi } from '../../src/services/detectionsApi'
+import { detectorsApi } from '../../src/services/detectorsApi'
+import { generatorApi } from '../../src/services/generatorApi'
+import { monitoringApi } from '../../src/services/monitoringApi'
+import { GeneratorPage } from '../../src/pages/GeneratorPage'
+import { StatusBanner } from '../../src/components/StatusBanner'
 
-jest.mock('../services/apiClient', () => ({
+jest.mock('../../src/services/apiClient', () => ({
   apiRequest: jest.fn(),
 }))
 
 const mockedApiRequest = apiRequest as jest.Mock
 
-jest.mock('../hooks/useTrafficGenerator', () => ({
+jest.mock('../../src/hooks/useTrafficGenerator', () => ({
   useTrafficGenerator: () => ({
     config: {
       profileName: 'demo-profile',
