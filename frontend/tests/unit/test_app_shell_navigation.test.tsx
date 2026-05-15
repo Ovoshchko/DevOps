@@ -21,7 +21,7 @@ test('switches between app sections from top navigation', async () => {
   await waitFor(() => expect(screen.getByRole('heading', { name: 'Detectors' })).toBeInTheDocument())
 
   fireEvent.click(screen.getByRole('button', { name: 'Monitoring' }))
-  expect(screen.getByRole('heading', { name: 'Monitoriщng' })).toBeInTheDocument()
+  expect(screen.getByRole('heading', { name: 'Monitoring' })).toBeInTheDocument()
 
   fireEvent.click(screen.getByRole('button', { name: 'Detections' }))
   expect(screen.getByRole('heading', { name: 'Detections' })).toBeInTheDocument()
