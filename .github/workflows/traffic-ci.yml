@@ -115,6 +115,10 @@ jobs:
           name: frontend-coverage
           path: frontend
 
+      - name: Show downloaded Sonar reports
+        run: |
+          find backend ml-service frontend -path '*/test-results/*' -o -name 'coverage.xml' -o -name 'lcov.info'
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v5
         env:
