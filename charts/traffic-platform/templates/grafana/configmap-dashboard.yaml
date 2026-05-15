@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  namespace: {{ include "traffic-platform.namespace" . }}
+  labels:
+    {{- include "traffic-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: grafana
+data:
+  traffic-anomaly-platform.json: |
+{{ .Files.Get "files/grafana/traffic-anomaly-platform.json" | indent 4 }}
