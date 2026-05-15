@@ -1,4 +1,14 @@
 import '@testing-library/jest-dom'
+import { randomFillSync } from 'crypto'
+
+if (!globalThis.crypto?.getRandomValues) {
+  Object.defineProperty(globalThis, 'crypto', {
+    configurable: true,
+    value: {
+      getRandomValues: <T extends ArrayBufferView>(array: T): T => randomFillSync(array as any) as T,
+    },
+  })
+}
 
 const defaultDateTimeFormatOptions: Intl.DateTimeFormatOptions = {
   year: 'numeric',

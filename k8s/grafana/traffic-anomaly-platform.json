@@ -84,7 +84,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "count(up{job=\"backend-pods\"} == 1)",
+          "expr": "count(up{job=\"backend-pods\", namespace=~\"$namespace\", pod=~\"$pod\"} == 1)",
           "legendFormat": "backend",
           "range": true,
           "refId": "A"
@@ -143,7 +143,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "count(up{job=\"ml-service-pods\"} == 1)",
+          "expr": "count(up{job=\"ml-service-pods\", namespace=~\"$namespace\", pod=~\"$pod\"} == 1)",
           "legendFormat": "ml-service",
           "range": true,
           "refId": "A"
@@ -207,7 +207,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "max(histogram_quantile(0.95, sum by (le, pod) (rate(backend_http_request_duration_seconds_bucket[5m]))))",
+          "expr": "max(histogram_quantile(0.95, sum by (le, pod) (rate(backend_http_request_duration_seconds_bucket{namespace=~\"$namespace\", pod=~\"$pod\"}[5m]))))",
           "legendFormat": "backend p95",
           "range": true,
           "refId": "A"
@@ -271,7 +271,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "max(histogram_quantile(0.95, sum by (le, pod) (rate(ml_service_http_request_duration_seconds_bucket[5m]))))",
+          "expr": "max(histogram_quantile(0.95, sum by (le, pod) (rate(ml_service_http_request_duration_seconds_bucket{namespace=~\"$namespace\", pod=~\"$pod\"}[5m]))))",
           "legendFormat": "ml p95",
           "range": true,
           "refId": "A"
@@ -316,7 +316,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "max by (job, pod) (up{job=~\"backend-pods|ml-service-pods\"})",
+          "expr": "max by (job, pod) (up{job=~\"backend-pods|ml-service-pods\", namespace=~\"$namespace\", pod=~\"$pod\"})",
           "legendFormat": "{{job}} {{pod}}",
           "range": true,
           "refId": "A"
@@ -374,7 +374,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum by (pod, method) (rate(backend_http_requests_total[5m]))",
+          "expr": "sum by (pod, method) (rate(backend_http_requests_total{namespace=~\"$namespace\", pod=~\"$pod\"}[5m]))",
           "legendFormat": "{{pod}} {{method}}",
           "range": true,
           "refId": "A"
@@ -419,7 +419,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum by (le, pod, method, path) (rate(backend_http_request_duration_seconds_bucket[5m])))",
+          "expr": "histogram_quantile(0.95, sum by (le, pod, method, path) (rate(backend_http_request_duration_seconds_bucket{namespace=~\"$namespace\", pod=~\"$pod\"}[5m])))",
           "legendFormat": "{{pod}} {{method}} {{path}}",
           "range": true,
           "refId": "A"
@@ -463,14 +463,14 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum by (pod, path) (backend_http_requests_in_progress)",
+          "expr": "sum by (pod, path) (backend_http_requests_in_progress{namespace=~\"$namespace\", pod=~\"$pod\"})",
           "legendFormat": "{{pod}} {{path}}",
           "range": true,
           "refId": "A"
         },
         {
           "editorMode": "code",
-          "expr": "sum by (pod, path, exception_type) (rate(backend_http_request_exceptions_total[5m]))",
+          "expr": "sum by (pod, path, exception_type) (rate(backend_http_request_exceptions_total{namespace=~\"$namespace\", pod=~\"$pod\"}[5m]))",
           "legendFormat": "exceptions {{pod}} {{path}} {{exception_type}}",
           "range": true,
           "refId": "B"
@@ -528,7 +528,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum by (pod, method) (rate(ml_service_http_requests_total[5m]))",
+          "expr": "sum by (pod, method) (rate(ml_service_http_requests_total{namespace=~\"$namespace\", pod=~\"$pod\"}[5m]))",
           "legendFormat": "{{pod}} {{method}}",
           "range": true,
           "refId": "A"
@@ -573,7 +573,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum by (le, pod, method, path) (rate(ml_service_http_request_duration_seconds_bucket[5m])))",
+          "expr": "histogram_quantile(0.95, sum by (le, pod, method, path) (rate(ml_service_http_request_duration_seconds_bucket{namespace=~\"$namespace\", pod=~\"$pod\"}[5m])))",
           "legendFormat": "{{pod}} {{method}} {{path}}",
           "range": true,
           "refId": "A"
@@ -617,14 +617,14 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum by (pod, path) (ml_service_http_requests_in_progress)",
+          "expr": "sum by (pod, path) (ml_service_http_requests_in_progress{namespace=~\"$namespace\", pod=~\"$pod\"})",
           "legendFormat": "{{pod}} {{path}}",
           "range": true,
           "refId": "A"
         },
         {
           "editorMode": "code",
-          "expr": "sum by (pod, path, exception_type) (rate(ml_service_http_request_exceptions_total[5m]))",
+          "expr": "sum by (pod, path, exception_type) (rate(ml_service_http_request_exceptions_total{namespace=~\"$namespace\", pod=~\"$pod\"}[5m]))",
           "legendFormat": "exceptions {{pod}} {{path}} {{exception_type}}",
           "range": true,
           "refId": "B"
@@ -644,7 +644,64 @@
     "kubernetes"
   ],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "definition": "label_values(up{job=~\"backend-pods|ml-service-pods\"}, namespace)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Namespace",
+        "multi": false,
+        "name": "namespace",
+        "options": [],
+        "query": {
+          "query": "label_values(up{job=~\"backend-pods|ml-service-pods\"}, namespace)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "definition": "label_values(up{job=~\"backend-pods|ml-service-pods\", namespace=~\"$namespace\"}, pod)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Pod",
+        "multi": false,
+        "name": "pod",
+        "options": [],
+        "query": {
+          "query": "label_values(up{job=~\"backend-pods|ml-service-pods\", namespace=~\"$namespace\"}, pod)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
   },
   "time": {
     "from": "now-15m",
@@ -654,6 +711,6 @@
   "timezone": "browser",
   "title": "Traffic Anomaly Platform",
   "uid": "traffic-anomaly-platform",
-  "version": 2,
+  "version": 3,
   "weekStart": ""
 }
