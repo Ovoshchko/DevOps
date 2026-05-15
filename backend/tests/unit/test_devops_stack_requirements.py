@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from fastapi.testclient import TestClient
@@ -84,6 +85,8 @@ def test_backend_and_frontend_dockerfiles_cover_runtime_requirements():
     frontend_nginx = _read_text('frontend/nginx/default.conf')
     backend_pyproject = _read_text('backend/pyproject.toml')
     frontend_package = _read_text('frontend/package.json')
+    frontend_package_json = json.loads(frontend_package)
+    frontend_jest_config = _read_text('frontend/jest.config.js')
     ml_pyproject = _read_text('ml-service/pyproject.toml')
 
     assert 'FROM python:3.11-slim AS builder' in backend_dockerfile
@@ -99,7 +102,8 @@ def test_backend_and_frontend_dockerfiles_cover_runtime_requirements():
     assert 'EXPOSE 80' in frontend_dockerfile
     assert 'COPY nginx/default.conf /etc/nginx/conf.d/default.conf' in frontend_dockerfile
     assert '"build": "react-scripts build"' in frontend_package
-    assert '"test": "react-scripts test --watchAll=false"' in frontend_package
+    assert frontend_package_json['scripts']['test'] == 'jest --config jest.config.js --watchAll=false'
+    assert "roots: ['<rootDir>/tests']" in frontend_jest_config
     assert '"typecheck": "tsc --noEmit"' in frontend_package
     assert 'proxy_pass http://backend:8000/;' in frontend_nginx
     assert 'try_files $uri /index.html;' in frontend_nginx

@@ -11,6 +11,10 @@ permissions:
   contents: read
   packages: write
 
+env:
+  TELEGRAM_TO: ${{ secrets.TELEGRAM_TO }}
+  TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+
 jobs:
 
   backend-test:
@@ -21,22 +25,63 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install './backend[dev]'
-      - run: PYTHONPATH=. python -m pytest backend/tests
+      - name: Run backend tests with coverage
+        run: |
+          mkdir -p backend/test-results
+          PYTHONPATH=. python -m pytest backend/tests \
+            --junitxml=backend/test-results/pytest.xml \
+            --cov=backend/app \
+            --cov-report=xml:backend/coverage.xml \
+            --cov-fail-under=80
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: backend-coverage
+          path: |
+            backend/coverage.xml
+            backend/test-results/pytest.xml
+      - name: Notify backend-test status
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: ./.github/actions/telegram-notify
+        with:
+          job_name: backend-test
+          job_status: ${{ job.status }}
 
   ml-test:
     runs-on: ubuntu-latest
-    needs: backend-test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       - run: pip install './ml-service[dev]'
-      - run: PYTHONPATH=ml-service python -m pytest ml-service/tests
+      - name: Run ml-service tests with coverage
+        run: |
+          cd ml-service
+          mkdir -p test-results
+          PYTHONPATH=. python -m pytest tests \
+            --junitxml=test-results/pytest.xml \
+            --cov=app \
+            --cov-report=xml:coverage.xml \
+            --cov-fail-under=80
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: ml-service-coverage
+          path: |
+            ml-service/coverage.xml
+            ml-service/test-results/pytest.xml
+      - name: Notify ml-test status
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: ./.github/actions/telegram-notify
+        with:
+          job_name: ml-test
+          job_status: ${{ job.status }}
 
   frontend-test:
     runs-on: ubuntu-latest
-    needs: ml-test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -46,62 +91,74 @@ jobs:
         working-directory: frontend
       - run: npm run typecheck
         working-directory: frontend
-      - run: npm test -- --watchAll=false
+      - name: Run frontend tests with coverage
+        run: |
+          mkdir -p test-results
+          npm test -- --coverage --watchAll=false --json --outputFile=test-results/jest-results.json --coverageThreshold='{"global":{"statements":80,"branches":80,"functions":80,"lines":80}}'
         working-directory: frontend
+      - name: Convert frontend test report for SonarCloud
+        if: ${{ always() }}
+        run: node scripts/jest-to-sonar.js test-results/jest-results.json test-results/sonar-test-execution.xml
+        working-directory: frontend
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: frontend-coverage
+          path: |
+            frontend/coverage/lcov.info
+            frontend/test-results/sonar-test-execution.xml
+      - name: Notify frontend-test status
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: ./.github/actions/telegram-notify
+        with:
+          job_name: frontend-test
+          job_status: ${{ job.status }}
 
   sonarqube-scan:
     name: SonarQube Analysis
     runs-on: ubuntu-latest
-    needs: frontend-test
+    needs: [backend-test, ml-test, frontend-test]
+    if: ${{ always() }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - uses: actions/download-artifact@v4
         with:
-          python-version: '3.13'
+          name: backend-coverage
+          path: backend
 
-      - name: Install backend and ml-service dependencies
-        run: |
-          pip install pytest pytest-cov
-          pip install './backend[dev]'
-          pip install './ml-service[dev]'
-
-      - name: Run backend tests with coverage
-        run: |
-          PYTHONPATH=. python -m pytest backend/tests \
-            --cov=backend/app \
-            --cov-report=xml:backend/coverage.xml \
-            --cov-fail-under=80
-
-      - name: Run ml-service tests with coverage
-        run: |
-          cd ml-service
-          PYTHONPATH=. python -m pytest tests \
-            --cov=app \
-            --cov-report=xml:coverage.xml \
-            --cov-fail-under=80
-
-      - uses: actions/setup-node@v4
+      - uses: actions/download-artifact@v4
         with:
-          node-version: '20'
+          name: ml-service-coverage
+          path: ml-service
 
-      - name: Run frontend tests with coverage
+      - uses: actions/download-artifact@v4
+        with:
+          name: frontend-coverage
+          path: frontend
+
+      - name: Show downloaded Sonar reports
         run: |
-          cd frontend
-          npm ci
-          npm test -- --coverage --watchAll=false --coverageThreshold='{"global":{"statements":80,"branches":80,"functions":80,"lines":80}}'
+          find backend ml-service frontend -path '*/test-results/*' -o -name 'coverage.xml' -o -name 'lcov.info'
 
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
+        uses: SonarSource/sonarqube-scan-action@v6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.javascript.lcov.reportPaths=frontend/coverage/lcov.info
             -Dsonar.qualitygate.wait=true
+      - name: Notify sonarqube-scan status
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: ./.github/actions/telegram-notify
+        with:
+          job_name: sonarqube-scan
+          job_status: ${{ job.status }}
 
   backend-build:
     runs-on: ubuntu-latest
@@ -113,6 +170,13 @@ jobs:
           python-version: '3.11'
       - run: pip install './backend[dev]'
       - run: python -m pip wheel --no-deps --wheel-dir /tmp/wheels ./backend
+      - name: Notify backend-build status
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: ./.github/actions/telegram-notify
+        with:
+          job_name: backend-build
+          job_status: ${{ job.status }}
 
   ml-build:
     runs-on: ubuntu-latest
@@ -124,6 +188,13 @@ jobs:
           python-version: '3.11'
       - run: pip install './ml-service[dev]'
       - run: python -m pip wheel --no-deps --wheel-dir /tmp/wheels ./ml-service
+      - name: Notify ml-build status
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: ./.github/actions/telegram-notify
+        with:
+          job_name: ml-build
+          job_status: ${{ job.status }}
 
   frontend-build:
     runs-on: ubuntu-latest
@@ -137,6 +208,13 @@ jobs:
         working-directory: frontend
       - run: npm run build
         working-directory: frontend
+      - name: Notify frontend-build status
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: ./.github/actions/telegram-notify
+        with:
+          job_name: frontend-build
+          job_status: ${{ job.status }}
 
   backend-docker:
     runs-on: ubuntu-latest
@@ -155,6 +233,13 @@ jobs:
           file: ./backend/Dockerfile
           push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           tags: ghcr.io/${{ env.OWNER }}/traffic-backend:latest
+      - name: Notify backend-docker status
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: ./.github/actions/telegram-notify
+        with:
+          job_name: backend-docker
+          job_status: ${{ job.status }}
 
   ml-docker:
     runs-on: ubuntu-latest
@@ -173,6 +258,13 @@ jobs:
           file: ./ml-service/Dockerfile
           push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           tags: ghcr.io/${{ env.OWNER }}/traffic-ml-service:latest
+      - name: Notify ml-docker status
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: ./.github/actions/telegram-notify
+        with:
+          job_name: ml-docker
+          job_status: ${{ job.status }}
 
   frontend-docker:
     runs-on: ubuntu-latest
@@ -190,3 +282,56 @@ jobs:
           context: ./frontend
           push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           tags: ghcr.io/${{ env.OWNER }}/traffic-frontend:latest
+      - name: Notify frontend-docker status
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: ./.github/actions/telegram-notify
+        with:
+          job_name: frontend-docker
+          job_status: ${{ job.status }}
+
+  telegram-notify:
+    name: Telegram Notification
+    runs-on: ubuntu-latest
+    needs:
+      - backend-test
+      - ml-test
+      - frontend-test
+      - sonarqube-scan
+      - backend-build
+      - ml-build
+      - frontend-build
+      - backend-docker
+      - ml-docker
+      - frontend-docker
+    if: ${{ always() }}
+    steps:
+      - name: Send pipeline status to Telegram
+        uses: appleboy/telegram-action@v1.0.1
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          format: markdown
+          disable_web_page_preview: true
+          message: |
+            *${{ github.workflow }}* finished for `${{ github.repository }}`
+
+            *Result*
+            backend-test: `${{ needs.backend-test.result }}`
+            ml-test: `${{ needs.ml-test.result }}`
+            frontend-test: `${{ needs.frontend-test.result }}`
+            sonarqube-scan: `${{ needs.sonarqube-scan.result }}`
+            backend-build: `${{ needs.backend-build.result }}`
+            ml-build: `${{ needs.ml-build.result }}`
+            frontend-build: `${{ needs.frontend-build.result }}`
+            backend-docker: `${{ needs.backend-docker.result }}`
+            ml-docker: `${{ needs.ml-docker.result }}`
+            frontend-docker: `${{ needs.frontend-docker.result }}`
+
+            *Context*
+            Event: `${{ github.event_name }}`
+            Ref: `${{ github.ref_name }}`
+            Actor: `${{ github.actor }}`
+            Commit: `${{ github.sha }}`
+
+            Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}

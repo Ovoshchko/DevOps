@@ -3,7 +3,9 @@ import { TrafficGeneratorConfig, TrafficPoint } from '../types/generator'
 function randomInRange(min: number, max: number): number {
   const low = Math.min(min, max)
   const high = Math.max(min, max)
-  return Math.round(low + Math.random() * (high - low))
+  const randomValues = new Uint32Array(1)
+  crypto.getRandomValues(randomValues)
+  return Math.round(low + (randomValues[0] / 0xffffffff) * (high - low))
 }
 
 export function createTrafficBatch(config: TrafficGeneratorConfig): TrafficPoint[] {
