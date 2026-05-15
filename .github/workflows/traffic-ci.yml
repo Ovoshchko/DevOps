@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   packages: write
 
 env:
@@ -296,56 +296,6 @@ jobs:
           job_name: frontend-docker
           job_status: ${{ job.status }}
 
-  deploy-manifests:
-    name: Update Helm Image Tags
-    runs-on: ubuntu-latest
-    needs: frontend-docker
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Pin Helm values to immutable image tag
-        run: |
-          python - <<'PY'
-          import re
-          from pathlib import Path
-
-          path = Path('charts/traffic-platform/values.yaml')
-          text = path.read_text()
-          tag = 'sha-${{ github.sha }}'
-
-          for service in ('backend', 'frontend', 'mlService'):
-              marker = f'{service}:\n'
-              start = text.index(marker)
-              next_section = text.find('\n\n', start)
-              if next_section == -1:
-                  next_section = len(text)
-              section = text[start:next_section]
-              section = re.sub(r'(?m)^    tag: .+$', f'    tag: {tag}', section)
-              text = text[:start] + section + text[next_section:]
-
-          path.write_text(text)
-          PY
-      - name: Commit Helm release manifest
-        run: |
-          if git diff --quiet charts/traffic-platform/values.yaml; then
-            echo "Helm values already point to this image tag"
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add charts/traffic-platform/values.yaml
-          git commit -m "chore: release images sha-${{ github.sha }} [skip ci]"
-          git push
-      - name: Notify deploy-manifests status
-        if: ${{ always() }}
-        continue-on-error: true
-        uses: ./.github/actions/telegram-notify
-        with:
-          job_name: deploy-manifests
-          job_status: ${{ job.status }}
-
   telegram-notify:
     name: Telegram Notification
     runs-on: ubuntu-latest
@@ -360,7 +310,6 @@ jobs:
       - backend-docker
       - ml-docker
       - frontend-docker
-      - deploy-manifests
     if: ${{ always() }}
     steps:
       - name: Send pipeline status to Telegram
@@ -384,7 +333,6 @@ jobs:
             backend-docker: `${{ needs.backend-docker.result }}`
             ml-docker: `${{ needs.ml-docker.result }}`
             frontend-docker: `${{ needs.frontend-docker.result }}`
-            deploy-manifests: `${{ needs.deploy-manifests.result }}`
 
             *Context*
             Event: `${{ github.event_name }}`
