@@ -17,6 +17,8 @@ spec:
       labels:
         {{- include "traffic-platform.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: frontend
+      annotations:
+        traffic-platform/rollout-token: {{ .Values.frontend.rolloutToken | quote }}
     spec:
       containers:
         - name: frontend

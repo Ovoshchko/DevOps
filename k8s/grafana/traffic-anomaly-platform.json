@@ -84,13 +84,13 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "count(up{job=\"backend-pods\", namespace=~\"$namespace\", pod=~\"$pod\"} == 1)",
-          "legendFormat": "backend",
+          "expr": "count(up{job=~\"$service\", namespace=~\"$namespace\", pod=~\"$pod\"} == 1)",
+          "legendFormat": "selected service",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Active Backend Pods",
+      "title": "Active Service Pods",
       "type": "stat"
     },
     {
@@ -107,15 +107,20 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
+                "color": "green",
                 "value": null
               },
               {
-                "color": "green",
+                "color": "orange",
+                "value": 0.5
+              },
+              {
+                "color": "red",
                 "value": 1
               }
             ]
-          }
+          },
+          "unit": "cores"
         },
         "overrides": []
       },
@@ -125,11 +130,11 @@
         "x": 4,
         "y": 1
       },
-      "id": 2,
+      "id": 12,
       "options": {
         "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "center",
+        "graphMode": "area",
+        "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
@@ -138,18 +143,18 @@
           "fields": "",
           "values": false
         },
-        "textMode": "value"
+        "textMode": "auto"
       },
       "targets": [
         {
           "editorMode": "code",
-          "expr": "count(up{job=\"ml-service-pods\", namespace=~\"$namespace\", pod=~\"$pod\"} == 1)",
-          "legendFormat": "ml-service",
+          "expr": "sum((sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=~\"$namespace\", pod=~\"$pod\", container!=\"\", container!=\"POD\", image!=\"\"}[5m]))) * on(pod) group_left(job) max by (pod, job) (up{job=~\"$service\", namespace=~\"$namespace\"} == 1))",
+          "legendFormat": "cpu cores",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Active ML Pods",
+      "title": "Service CPU Usage",
       "type": "stat"
     },
     {
@@ -207,77 +212,13 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "max(histogram_quantile(0.95, sum by (le, pod) (rate(backend_http_request_duration_seconds_bucket{namespace=~\"$namespace\", pod=~\"$pod\"}[5m]))))",
-          "legendFormat": "backend p95",
+          "expr": "max(histogram_quantile(0.95, sum by (le, job, pod) (rate(backend_http_request_duration_seconds_bucket{job=~\"$service\", namespace=~\"$namespace\", pod=~\"$pod\"}[5m])))) or max(histogram_quantile(0.95, sum by (le, job, pod) (rate(ml_service_http_request_duration_seconds_bucket{job=~\"$service\", namespace=~\"$namespace\", pod=~\"$pod\"}[5m]))))",
+          "legendFormat": "p95",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Backend Latency p95",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "orange",
-                "value": 0.3
-              },
-              {
-                "color": "red",
-                "value": 1
-              }
-            ]
-          },
-          "unit": "s"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 4,
-        "x": 12,
-        "y": 1
-      },
-      "id": 4,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "max(histogram_quantile(0.95, sum by (le, pod) (rate(ml_service_http_request_duration_seconds_bucket{namespace=~\"$namespace\", pod=~\"$pod\"}[5m]))))",
-          "legendFormat": "ml p95",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "ML Service Latency p95",
+      "title": "Service Latency p95",
       "type": "stat"
     },
     {
@@ -316,7 +257,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "max by (job, pod) (up{job=~\"backend-pods|ml-service-pods\", namespace=~\"$namespace\", pod=~\"$pod\"})",
+          "expr": "max by (job, pod) (up{job=~\"$service\", namespace=~\"$namespace\", pod=~\"$pod\"})",
           "legendFormat": "{{job}} {{pod}}",
           "range": true,
           "refId": "A"
@@ -335,7 +276,7 @@
       },
       "id": 101,
       "panels": [],
-      "title": "Backend API",
+      "title": "Selected Service API",
       "type": "row"
     },
     {
@@ -374,13 +315,13 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum by (pod, method) (rate(backend_http_requests_total{namespace=~\"$namespace\", pod=~\"$pod\"}[5m]))",
-          "legendFormat": "{{pod}} {{method}}",
+          "expr": "sum by (job, pod, method) (rate(backend_http_requests_total{job=~\"$service\", namespace=~\"$namespace\", pod=~\"$pod\"}[5m])) or sum by (job, pod, method) (rate(ml_service_http_requests_total{job=~\"$service\", namespace=~\"$namespace\", pod=~\"$pod\"}[5m]))",
+          "legendFormat": "{{job}} {{pod}} {{method}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Backend Request Rate by Pod and Method",
+      "title": "Request Rate by Pod and Method",
       "type": "timeseries"
     },
     {
@@ -419,13 +360,13 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum by (le, pod, method, path) (rate(backend_http_request_duration_seconds_bucket{namespace=~\"$namespace\", pod=~\"$pod\"}[5m])))",
-          "legendFormat": "{{pod}} {{method}} {{path}}",
+          "expr": "histogram_quantile(0.95, sum by (le, job, pod, method, path) (rate(backend_http_request_duration_seconds_bucket{job=~\"$service\", namespace=~\"$namespace\", pod=~\"$pod\"}[5m]))) or histogram_quantile(0.95, sum by (le, job, pod, method, path) (rate(ml_service_http_request_duration_seconds_bucket{job=~\"$service\", namespace=~\"$namespace\", pod=~\"$pod\"}[5m])))",
+          "legendFormat": "{{job}} {{pod}} {{method}} {{path}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Backend Latency p95 by Pod and Route",
+      "title": "Latency p95 by Pod and Route",
       "type": "timeseries"
     },
     {
@@ -444,8 +385,8 @@
       "gridPos": {
         "h": 8,
         "w": 12,
-        "x": 0,
-        "y": 16
+        "x": 12,
+        "y": 24
       },
       "id": 8,
       "options": {
@@ -463,56 +404,43 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum by (pod, path) (backend_http_requests_in_progress{namespace=~\"$namespace\", pod=~\"$pod\"})",
-          "legendFormat": "{{pod}} {{path}}",
+          "expr": "sum by (job, pod, path) (backend_http_requests_in_progress{job=~\"$service\", namespace=~\"$namespace\", pod=~\"$pod\"}) or sum by (job, pod, path) (ml_service_http_requests_in_progress{job=~\"$service\", namespace=~\"$namespace\", pod=~\"$pod\"})",
+          "legendFormat": "{{job}} {{pod}} {{path}}",
           "range": true,
           "refId": "A"
         },
         {
           "editorMode": "code",
-          "expr": "sum by (pod, path, exception_type) (rate(backend_http_request_exceptions_total{namespace=~\"$namespace\", pod=~\"$pod\"}[5m]))",
-          "legendFormat": "exceptions {{pod}} {{path}} {{exception_type}}",
+          "expr": "sum by (job, pod, path, exception_type) (rate(backend_http_request_exceptions_total{job=~\"$service\", namespace=~\"$namespace\", pod=~\"$pod\"}[5m])) or sum by (job, pod, path, exception_type) (rate(ml_service_http_request_exceptions_total{job=~\"$service\", namespace=~\"$namespace\", pod=~\"$pod\"}[5m]))",
+          "legendFormat": "exceptions {{job}} {{pod}} {{path}} {{exception_type}}",
           "range": true,
           "refId": "B"
         }
       ],
-      "title": "Backend In-Progress Requests and Exceptions",
+      "title": "In-Progress Requests and Exceptions",
       "type": "timeseries"
     },
     {
-      "collapsed": false,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "cores"
+        },
+        "overrides": []
+      },
       "gridPos": {
-        "h": 1,
-        "w": 24,
+        "h": 8,
+        "w": 12,
         "x": 0,
         "y": 24
       },
-      "id": 102,
-      "panels": [],
-      "title": "ML Service",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "unit": "reqps"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 25
-      },
-      "id": 9,
+      "id": 13,
       "options": {
         "legend": {
           "calcs": [],
@@ -528,109 +456,13 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum by (pod, method) (rate(ml_service_http_requests_total{namespace=~\"$namespace\", pod=~\"$pod\"}[5m]))",
-          "legendFormat": "{{pod}} {{method}}",
+          "expr": "(sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=~\"$namespace\", pod=~\"$pod\", container!=\"\", container!=\"POD\", image!=\"\"}[5m]))) * on(pod) group_left(job) max by (pod, job) (up{job=~\"$service\", namespace=~\"$namespace\"} == 1)",
+          "legendFormat": "{{job}} {{pod}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "ML Service Request Rate by Pod and Method",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "unit": "s"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 33
-      },
-      "id": 10,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum by (le, pod, method, path) (rate(ml_service_http_request_duration_seconds_bucket{namespace=~\"$namespace\", pod=~\"$pod\"}[5m])))",
-          "legendFormat": "{{pod}} {{method}} {{path}}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "ML Service Latency p95 by Pod and Route",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 33
-      },
-      "id": 11,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "sum by (pod, path) (ml_service_http_requests_in_progress{namespace=~\"$namespace\", pod=~\"$pod\"})",
-          "legendFormat": "{{pod}} {{path}}",
-          "range": true,
-          "refId": "A"
-        },
-        {
-          "editorMode": "code",
-          "expr": "sum by (pod, path, exception_type) (rate(ml_service_http_request_exceptions_total{namespace=~\"$namespace\", pod=~\"$pod\"}[5m]))",
-          "legendFormat": "exceptions {{pod}} {{path}} {{exception_type}}",
-          "range": true,
-          "refId": "B"
-        }
-      ],
-      "title": "ML Service In-Progress Requests and Exceptions",
+      "title": "CPU Usage by Pod",
       "type": "timeseries"
     }
   ],
@@ -674,6 +506,34 @@
         "type": "query"
       },
       {
+        "allValue": "backend-pods|ml-service-pods",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "definition": "label_values(up{job=~\"backend-pods|ml-service-pods\", namespace=~\"$namespace\"}, job)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Service",
+        "multi": false,
+        "name": "service",
+        "options": [],
+        "query": {
+          "query": "label_values(up{job=~\"backend-pods|ml-service-pods\", namespace=~\"$namespace\"}, job)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
         "allValue": ".*",
         "current": {
           "selected": true,
@@ -684,7 +544,7 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(up{job=~\"backend-pods|ml-service-pods\", namespace=~\"$namespace\"}, pod)",
+        "definition": "query_result(max_over_time(up{job=~\"$service\", namespace=~\"$namespace\"}[2m]) == 1)",
         "hide": 0,
         "includeAll": true,
         "label": "Pod",
@@ -692,11 +552,11 @@
         "name": "pod",
         "options": [],
         "query": {
-          "query": "label_values(up{job=~\"backend-pods|ml-service-pods\", namespace=~\"$namespace\"}, pod)",
+          "query": "query_result(max_over_time(up{job=~\"$service\", namespace=~\"$namespace\"}[2m]) == 1)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
-        "regex": "",
+        "regex": "/pod=\"([^\"]+)\"/",
         "skipUrlSync": false,
         "sort": 1,
         "type": "query"
@@ -711,6 +571,6 @@
   "timezone": "browser",
   "title": "Traffic Anomaly Platform",
   "uid": "traffic-anomaly-platform",
-  "version": 3,
+  "version": 5,
   "weekStart": ""
 }
