@@ -1,0 +1,175 @@
+global:
+  namespace: devops
+  imagePullPolicy: Always
+
+secrets:
+  create: false
+
+backend:
+  replicaCount: 1
+  hpa:
+    minReplicas: 1
+    maxReplicas: 5
+    averageCpuUtilization: 15
+  image:
+    repository: ghcr.io/ovoshchko/traffic-backend
+    tag: latest
+  env:
+    influxUrl: http://influxdb
+    influxOrg: devops
+    influxBucket: traffic
+    mlServiceUrl: http://ml-service
+  resources:
+    requests:
+      cpu: 500m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 512Mi
+
+frontend:
+  replicaCount: 1
+  image:
+    repository: ghcr.io/ovoshchko/traffic-frontend
+    tag: latest
+  service:
+    type: LoadBalancer
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
+postgres:
+  enabled: true
+
+  replicaCount: 1
+
+  image:
+    repository: postgres
+    tag: 16-alpine
+    pullPolicy: IfNotPresent
+  
+  service:
+    type: ClusterIP
+    port: 5432
+
+  persistence:
+    enabled: true
+    size: 10Gi
+    accessMode: ReadWriteOnce
+  
+  auth:
+    database: traffic
+    username: traffic
+    password: change-me
+    dsn: change-me
+    existingSecret: postgres-secret
+    keys:
+      username: POSTGRES_USER
+      password: POSTGRES_PASSWORD
+      database: POSTGRES_DB
+      dsn: POSTGRES_DSN
+  
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+influxdb:
+  replicaCount: 1
+  image:
+    repository: influxdb
+    tag: "2.7"
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 80
+  config:
+    mode: setup
+    org: devops
+    bucket: traffic
+  persistence:
+    size: 10Gi
+    accessMode: ReadWriteOnce
+  auth:
+    existingSecret: influxdb-secret
+    username: change-me
+    password: change-me
+    adminToken: change-me
+    keys:
+      adminToken: DOCKER_INFLUXDB_INIT_ADMIN_TOKEN
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+mlService:
+  replicaCount: 1
+  image:
+    repository: ghcr.io/ovoshchko/traffic-ml-service
+    tag: latest
+  service:
+    type: ClusterIP
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+prometheus:
+  replicaCount: 1
+  image:
+    repository: prom/prometheus
+    tag: v2.54.1
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 80
+  persistence:
+    size: 10Gi
+    accessMode: ReadWriteOnce
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+grafana:
+  replicaCount: 1
+  image:
+    repository: grafana/grafana
+    tag: 11.2.0
+    pullPolicy: IfNotPresent
+  service:
+    type: LoadBalancer
+    port: 80
+  persistence:
+    size: 5Gi
+    accessMode: ReadWriteOnce
+  auth:
+    existingSecret: grafana-secret
+    adminUser: change-me
+    adminPassword: change-me
+    keys:
+      adminUser: GF_SECURITY_ADMIN_USER
+      adminPassword: GF_SECURITY_ADMIN_PASSWORD
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi

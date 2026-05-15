@@ -1,0 +1,10 @@
+Traffic Platform has been rendered for namespace {{ include "traffic-platform.namespace" . }}.
+
+Services:
+  frontend: http://frontend
+  backend: http://backend
+  ml-service: http://ml-service
+  postgres: postgres:5432
+  influxdb: http://influxdb
+  prometheus: http://prometheus
+  grafana: http://grafana

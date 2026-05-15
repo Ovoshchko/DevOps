@@ -75,7 +75,7 @@ def test_docker_compose_defines_complete_lab2_stack():
     assert 'grafana:' in compose
     assert '9090:9090' in compose
     assert '3001:3000' in compose
-    assert 'proxy_pass http://backend:8000/;' in frontend_nginx
+    assert 'proxy_pass http://backend/;' in frontend_nginx
 
 
 def test_backend_and_frontend_dockerfiles_cover_runtime_requirements():
@@ -105,7 +105,7 @@ def test_backend_and_frontend_dockerfiles_cover_runtime_requirements():
     assert frontend_package_json['scripts']['test'] == 'jest --config jest.config.js --watchAll=false'
     assert "roots: ['<rootDir>/tests']" in frontend_jest_config
     assert '"typecheck": "tsc --noEmit"' in frontend_package
-    assert 'proxy_pass http://backend:8000/;' in frontend_nginx
+    assert 'proxy_pass http://backend/;' in frontend_nginx
     assert 'try_files $uri /index.html;' in frontend_nginx
 
     assert 'COPY models ./models' in ml_dockerfile
