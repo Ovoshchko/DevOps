@@ -29,7 +29,6 @@ backend:
 
 frontend:
   replicaCount: 1
-  rolloutToken: ""
   image:
     repository: ghcr.io/ovoshchko/traffic-frontend
     tag: latest
