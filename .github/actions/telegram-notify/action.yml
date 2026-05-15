@@ -1,0 +1,26 @@
+name: Telegram job notification
+description: Send a GitHub Actions job status notification to Telegram.
+
+inputs:
+  job_name:
+    description: Name of the job being reported.
+    required: true
+  job_status:
+    description: Status of the job being reported.
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Send job status to Telegram
+      uses: appleboy/telegram-action@v1.0.1
+      with:
+        to: ${{ env.TELEGRAM_TO }}
+        token: ${{ env.TELEGRAM_TOKEN }}
+        format: markdown
+        disable_web_page_preview: true
+        message: |
+          *Job status changed*
+          Workflow: `${{ github.workflow }}`
+          Job: `${{ inputs.job_name }}`
+          Status: `${{ inputs.job_status }}`
+          Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}

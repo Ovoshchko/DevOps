@@ -11,6 +11,10 @@ permissions:
   contents: read
   packages: write
 
+env:
+  TELEGRAM_TO: ${{ secrets.TELEGRAM_TO }}
+  TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+
 jobs:
 
   backend-test:
@@ -36,6 +40,13 @@ jobs:
           path: |
             backend/coverage.xml
             backend/test-results/pytest.xml
+      - name: Notify backend-test status
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: ./.github/actions/telegram-notify
+        with:
+          job_name: backend-test
+          job_status: ${{ job.status }}
 
   ml-test:
     runs-on: ubuntu-latest
@@ -61,6 +72,13 @@ jobs:
           path: |
             ml-service/coverage.xml
             ml-service/test-results/pytest.xml
+      - name: Notify ml-test status
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: ./.github/actions/telegram-notify
+        with:
+          job_name: ml-test
+          job_status: ${{ job.status }}
 
   frontend-test:
     runs-on: ubuntu-latest
@@ -89,6 +107,13 @@ jobs:
           path: |
             frontend/coverage/lcov.info
             frontend/test-results/sonar-test-execution.xml
+      - name: Notify frontend-test status
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: ./.github/actions/telegram-notify
+        with:
+          job_name: frontend-test
+          job_status: ${{ job.status }}
 
   sonarqube-scan:
     name: SonarQube Analysis
@@ -127,6 +152,13 @@ jobs:
         with:
           args: >
             -Dsonar.qualitygate.wait=true
+      - name: Notify sonarqube-scan status
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: ./.github/actions/telegram-notify
+        with:
+          job_name: sonarqube-scan
+          job_status: ${{ job.status }}
 
   backend-build:
     runs-on: ubuntu-latest
@@ -138,6 +170,13 @@ jobs:
           python-version: '3.11'
       - run: pip install './backend[dev]'
       - run: python -m pip wheel --no-deps --wheel-dir /tmp/wheels ./backend
+      - name: Notify backend-build status
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: ./.github/actions/telegram-notify
+        with:
+          job_name: backend-build
+          job_status: ${{ job.status }}
 
   ml-build:
     runs-on: ubuntu-latest
@@ -149,6 +188,13 @@ jobs:
           python-version: '3.11'
       - run: pip install './ml-service[dev]'
       - run: python -m pip wheel --no-deps --wheel-dir /tmp/wheels ./ml-service
+      - name: Notify ml-build status
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: ./.github/actions/telegram-notify
+        with:
+          job_name: ml-build
+          job_status: ${{ job.status }}
 
   frontend-build:
     runs-on: ubuntu-latest
@@ -162,6 +208,13 @@ jobs:
         working-directory: frontend
       - run: npm run build
         working-directory: frontend
+      - name: Notify frontend-build status
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: ./.github/actions/telegram-notify
+        with:
+          job_name: frontend-build
+          job_status: ${{ job.status }}
 
   backend-docker:
     runs-on: ubuntu-latest
@@ -180,6 +233,13 @@ jobs:
           file: ./backend/Dockerfile
           push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           tags: ghcr.io/${{ env.OWNER }}/traffic-backend:latest
+      - name: Notify backend-docker status
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: ./.github/actions/telegram-notify
+        with:
+          job_name: backend-docker
+          job_status: ${{ job.status }}
 
   ml-docker:
     runs-on: ubuntu-latest
@@ -198,6 +258,13 @@ jobs:
           file: ./ml-service/Dockerfile
           push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           tags: ghcr.io/${{ env.OWNER }}/traffic-ml-service:latest
+      - name: Notify ml-docker status
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: ./.github/actions/telegram-notify
+        with:
+          job_name: ml-docker
+          job_status: ${{ job.status }}
 
   frontend-docker:
     runs-on: ubuntu-latest
@@ -215,6 +282,13 @@ jobs:
           context: ./frontend
           push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           tags: ghcr.io/${{ env.OWNER }}/traffic-frontend:latest
+      - name: Notify frontend-docker status
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: ./.github/actions/telegram-notify
+        with:
+          job_name: frontend-docker
+          job_status: ${{ job.status }}
 
   telegram-notify:
     name: Telegram Notification
