@@ -13,7 +13,7 @@ backend:
     averageCpuUtilization: 15
   image:
     repository: ghcr.io/ovoshchko/traffic-backend
-    tag: latest
+    tag: sha-ea74e0f158682331431ab9855b679836209a5884
   env:
     influxUrl: http://influxdb
     influxOrg: devops
@@ -31,7 +31,7 @@ frontend:
   replicaCount: 1
   image:
     repository: ghcr.io/ovoshchko/traffic-frontend
-    tag: latest
+    tag: sha-ea74e0f158682331431ab9855b679836209a5884
   service:
     type: LoadBalancer
   resources:
@@ -116,7 +116,7 @@ mlService:
   replicaCount: 1
   image:
     repository: ghcr.io/ovoshchko/traffic-ml-service
-    tag: latest
+    tag: sha-ea74e0f158682331431ab9855b679836209a5884
   service:
     type: ClusterIP
   resources:
